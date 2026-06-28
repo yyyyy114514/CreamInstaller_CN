@@ -1,10 +1,15 @@
 # CreamInstaller汉化版
 
 汉化版本：5.0.2.3
+
 删除了更新模块
+
 用的kimi2.7
+
 中文使用教程：https://lcnz0ramrz5w.feishu.cn/wiki/QJYVwZZKOijBWMkIKQwcvt3hnWe
+
 bili:[奶农强健贝利亚](https://space.bilibili.com/501471084)
+
 下面是原版readmes
 
 ### [Revived] CreamInstaller: Automatic DLC Unlocker Installer & Configuration Generator
