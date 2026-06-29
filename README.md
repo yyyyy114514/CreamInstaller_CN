@@ -1,6 +1,6 @@
 # CreamInstaller汉化版
 
-汉化版本：5.0.2.3
+汉化版本：5.0.2.3[点击前往](https://github.com/FroggMaster/CreamInstaller/releases/latest)
 
 删除了更新模块
 
@@ -10,7 +10,7 @@
 
 bili:[奶农强健贝利亚](https://space.bilibili.com/501471084)
 
-下面是原版readmes
+下面是原版readme
 
 ### [Revived] CreamInstaller: Automatic DLC Unlocker Installer & Configuration Generator
 
