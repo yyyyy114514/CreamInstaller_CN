@@ -421,7 +421,6 @@ internal sealed partial class SelectForm : CustomForm
                     selection.SteamApiDllMissing = steamApiDllMissing;
                     if (steamApiDllMissing)
                     {
-                        selection.UseProxy = true;
                         bool has64 = selection.ExecutableDirectories.Any(d => d.binaryType == BinaryType.BIT64);
                         bool has32 = selection.ExecutableDirectories.Any(d => d.binaryType == BinaryType.BIT32);
                         string dllName = (has64, has32) switch
@@ -1211,16 +1210,8 @@ internal sealed partial class SelectForm : CustomForm
             if (selection.InstalledUnlocker != InstalledUnlocker.None)
             {
                 string detectedProxy = selection.DetectInstalledProxy();
-                if (detectedProxy is not null)
-                {
-                    selection.UseProxy = true;
-                    selection.Proxy = detectedProxy;
-                }
-                else
-                {
-                    selection.UseProxy = record.UseProxy;
-                    selection.Proxy = record.ProxyDllName;
-                }
+                selection.UseProxy = record.UseProxy;
+                selection.Proxy = detectedProxy ?? record.ProxyDllName;
             }
             selection.UseExtraProtection = record.UseExtraProtection;
 
@@ -1458,20 +1449,9 @@ internal sealed partial class SelectForm : CustomForm
         ProgramData.WriteExtraProtectionChoices(extraProtectionChoices);
         loadButton.Enabled = CanLoadSelections();
 
-        // Detect installed unlockers and proxy DLLs from disk for all selections
+        // Detect installed unlockers from disk for all selections
         foreach (Selection selection in Selection.All.Keys)
-        {
             selection.InstalledUnlocker = selection.DetectInstalledUnlocker();
-            if (selection.InstalledUnlocker != InstalledUnlocker.None)
-            {
-                string detectedProxy = selection.DetectInstalledProxy();
-                if (detectedProxy is not null)
-                {
-                    selection.UseProxy = true;
-                    selection.Proxy = detectedProxy;
-                }
-            }
-        }
 
         // Merge with persisted installed game records for any saved games not yet having a detected unlocker
         List<InstalledGameRecord> installedRecords = ProgramData.ReadInstalledGames();

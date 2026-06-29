@@ -1,18 +1,18 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace CreamInstaller.Utility;
 
 internal static class LogTextBox
 {
-    internal static readonly Color Background = Color.DarkSlateGray;
-    internal static readonly Color Operation = Color.LightGray;
-    internal static readonly Color Action = Color.LightBlue;
-    internal static readonly Color Success = Color.LightGreen;
-    internal static readonly Color Cleanup = Color.YellowGreen;
-    internal static readonly Color Failure = Color.IndianRed;
-    internal static readonly Color Warning = Color.Yellow;
-    internal static readonly Color Error = Color.DarkOrange;
+    internal static Color Background => ThemeManager.IsDark ? ColorTranslator.FromHtml("#1E1E1E") : SystemColors.Window;
+    internal static Color Operation => ThemeManager.IsDark ? ColorTranslator.FromHtml("#E0E0E0") : ColorTranslator.FromHtml("#222222");
+    internal static Color Action => ThemeManager.IsDark ? ColorTranslator.FromHtml("#87CEFA") : ColorTranslator.FromHtml("#0047AB");
+    internal static Color Success => ThemeManager.IsDark ? ColorTranslator.FromHtml("#98FB98") : ColorTranslator.FromHtml("#006400");
+    internal static Color Cleanup => ThemeManager.IsDark ? ColorTranslator.FromHtml("#ADFF2F") : ColorTranslator.FromHtml("#4A6B00");
+    internal static Color Failure => ThemeManager.IsDark ? ColorTranslator.FromHtml("#FF6B6B") : ColorTranslator.FromHtml("#8B0000");
+    internal static Color Warning => ThemeManager.IsDark ? ColorTranslator.FromHtml("#FFD700") : ColorTranslator.FromHtml("#8B4500");
+    internal static Color Error => ThemeManager.IsDark ? ColorTranslator.FromHtml("#FFA500") : ColorTranslator.FromHtml("#B22222");
 
     internal static void AppendText(this RichTextBox textBox, string text, Color color, bool scroll = false)
     {

@@ -67,8 +67,11 @@ internal static class ThemeManager
 
     // CustomTreeView light-mode specific colors
     private static readonly Color LightPlatform = ColorTranslator.FromHtml("#696900");
+    private static readonly Color LightPlatformHighlight = ColorTranslator.FromHtml("#3D3D00");
     private static readonly Color LightId = ColorTranslator.FromHtml("#006969");
+    private static readonly Color LightIdHighlight = ColorTranslator.FromHtml("#003D3D");
     private static readonly Color LightProxy = ColorTranslator.FromHtml("#006900");
+    private static readonly Color LightProxyHighlight = ColorTranslator.FromHtml("#003D00");
     private static readonly Color LightSelectionBack = ColorTranslator.FromHtml("#ADD6FF");
     private static readonly Color LightComboBack = SystemColors.Control;
     private static readonly Color LightComboBorder = SystemColors.ControlDark;
@@ -86,11 +89,12 @@ internal static class ThemeManager
 
     internal static Color CustomTreeViewProxyColor => IsDark ? DarkProxy : LightProxy;
 
-    internal static Color CustomTreeViewHighlightPlatformColor => DarkPlatform; // C1 (uses same color for highlight)
-    internal static Color CustomTreeViewDisabledPlatformColor => ColorTranslator.FromHtml("#AAAA69"); // C3
-    internal static Color CustomTreeViewHighlightIdColor => DarkId; // C4
-    internal static Color CustomTreeViewDisabledIdColor => ColorTranslator.FromHtml("#69AAAA"); // C6
-    internal static Color CustomTreeViewDisabledProxyColor => ColorTranslator.FromHtml("#69AA69"); // C8
+    internal static Color CustomTreeViewHighlightPlatformColor => IsDark ? DarkPlatform : LightPlatformHighlight;
+    internal static Color CustomTreeViewDisabledPlatformColor => IsDark ? ColorTranslator.FromHtml("#AAAA69") : ColorTranslator.FromHtml("#55552E");
+    internal static Color CustomTreeViewHighlightIdColor => IsDark ? DarkId : LightIdHighlight;
+    internal static Color CustomTreeViewDisabledIdColor => IsDark ? ColorTranslator.FromHtml("#69AAAA") : ColorTranslator.FromHtml("#2E5555");
+    internal static Color CustomTreeViewHighlightProxyColor => IsDark ? DarkProxy : LightProxyHighlight;
+    internal static Color CustomTreeViewDisabledProxyColor => IsDark ? ColorTranslator.FromHtml("#69AA69") : ColorTranslator.FromHtml("#2E552E");
 
     // Background color used when a tree node is selected.
     // Keeps light-mode behavior using the system highlight, but supplies a custom dark color for dark mode

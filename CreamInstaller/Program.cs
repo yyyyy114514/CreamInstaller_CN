@@ -39,8 +39,8 @@ internal static class Program
     internal static readonly string CurrentProcessFilePath = CurrentProcess.MainModule?.FileName ?? "";
     internal static readonly int CurrentProcessId = CurrentProcess.Id;
 
-    // Setting is now toggleable. Huzzah! 
-    internal static bool UseSmokeAPI = true;
+    // Setting is now toggleable. Huzzah!
+    internal static bool UseSmokeAPI;
 
     internal static bool BlockProtectedGames = true;
     internal static readonly string[] ProtectedGames = ["PAYDAY 2"];

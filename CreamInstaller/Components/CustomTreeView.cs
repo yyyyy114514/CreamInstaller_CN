@@ -359,11 +359,14 @@ internal sealed class CustomTreeView : TreeView
                     bounds = bounds with { X = bounds.X + bounds.Width, Width = size.Width + leftEP };
                     selectionBounds = new(selectionBounds.Location, selectionBounds.Size + bounds.Size with { Height = 0 });
                     extraProtCheckBoxBounds = new(extraProtCheckBoxBounds.Location, extraProtCheckBoxBounds.Size + bounds.Size with { Height = 0 });
-                    graphics.FillRectangle(brush, bounds);
-                    point = new(bounds.Location.X - 1 + leftEP, bounds.Location.Y + 1);
-                    TextRenderer.DrawText(graphics, text, font, point,
-                        Enabled ? ThemeManager.CustomTreeViewProxyColor : ThemeManager.CustomTreeViewDisabledProxyColor,
-                        TextFormatFlags.Default);
+                    color = highlighted
+                    ? ThemeManager.CustomTreeViewHighlightProxyColor
+                    : Enabled
+                        ? ThemeManager.CustomTreeViewProxyColor
+                        : ThemeManager.CustomTreeViewDisabledProxyColor;
+                graphics.FillRectangle(brush, bounds);
+                point = new(bounds.Location.X - 1 + leftEP, bounds.Location.Y + 1);
+                TextRenderer.DrawText(graphics, text, font, point, color, TextFormatFlags.Default);
 
                     extraProtectionCheckBoxBounds[selection] = RectangleToClient(extraProtCheckBoxBounds);
 
@@ -393,11 +396,14 @@ internal sealed class CustomTreeView : TreeView
                 bounds = bounds with { X = bounds.X + bounds.Width, Width = size.Width + left };
                 selectionBounds = new(selectionBounds.Location, selectionBounds.Size + bounds.Size with { Height = 0 });
                 checkBoxBounds = new(checkBoxBounds.Location, checkBoxBounds.Size + bounds.Size with { Height = 0 });
+                color = highlighted
+                    ? ThemeManager.CustomTreeViewHighlightProxyColor
+                    : Enabled
+                        ? ThemeManager.CustomTreeViewProxyColor
+                        : ThemeManager.CustomTreeViewDisabledProxyColor;
                 graphics.FillRectangle(brush, bounds);
                 point = new(bounds.Location.X - 1 + left, bounds.Location.Y + 1);
-                TextRenderer.DrawText(graphics, text, font, point,
-                    Enabled ? ThemeManager.CustomTreeViewProxyColor : ThemeManager.CustomTreeViewDisabledProxyColor,
-                    TextFormatFlags.Default);
+                TextRenderer.DrawText(graphics, text, font, point, color, TextFormatFlags.Default);
 
                 this.checkBoxBounds[selection] = RectangleToClient(checkBoxBounds);
 

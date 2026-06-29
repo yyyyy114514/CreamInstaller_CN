@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -75,7 +75,7 @@ internal sealed class Selection : IEquatable<Selection>
         if (selectForm is null)
             return;
         Enabled = selectForm.allCheckBox.Checked;
-        UseProxy = selectForm.proxyAllCheckBox.Checked;
+        UseProxy = false;
     }
 
     internal static IEnumerable<Selection> AllEnabled => All.Keys.Where(s => s.Enabled);

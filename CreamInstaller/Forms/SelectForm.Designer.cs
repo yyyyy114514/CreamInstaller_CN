@@ -1,4 +1,4 @@
-﻿using CreamInstaller.Components;
+using CreamInstaller.Components;
 using CreamInstaller.Resources;
 using System.ComponentModel;
 using System.Windows.Forms;
@@ -187,8 +187,8 @@ namespace CreamInstaller.Forms
             // useSmokeAPICheckBox
             // 
             useSmokeAPICheckBox.AutoSize = true;
-            useSmokeAPICheckBox.Checked = true;
-            useSmokeAPICheckBox.CheckState = CheckState.Checked;
+            useSmokeAPICheckBox.Checked = false;
+            useSmokeAPICheckBox.CheckState = CheckState.Unchecked;
             useSmokeAPICheckBox.Enabled = false;
             useSmokeAPICheckBox.Location = new System.Drawing.Point(2, 0);
             useSmokeAPICheckBox.Margin = new Padding(2, 0, 0, 0);

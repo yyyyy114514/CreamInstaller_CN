@@ -68,7 +68,7 @@
   "RefreshQueries": "刷新查询",
   "BlockProtectedGamesTitle": "屏蔽受保护游戏",
   "BlockProtectedGamesDescription": "阻止程序缓存和显示受反作弊保护的游戏。\n禁用此选项并向受保护游戏安装 DLC 解锁器需自行承担风险！\n\n已屏蔽游戏：{0}\n\n已屏蔽游戏子目录：{1}\n\n已屏蔽游戏子目录例外：{2}",
-  "UseSmokeAPITitle": "【不推荐】使用 SmokeAPI",
+  "UseSmokeAPITitle": "使用 SmokeAPI",
   "UseSmokeAPIDescription": "[实验性] 警告：此功能可能仍不稳定。\n此设置恢复使用 SmokeAPI。\n如果某些游戏在启用 SmokeAPI 后无法启动，请禁用此设置，然后重新点击“生成并安装”。",
   "SkipUpdateCheck": "跳过更新检查",
   "RestartToCheckUpdates": "重启软件后将检查更新",
