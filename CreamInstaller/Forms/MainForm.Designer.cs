@@ -152,7 +152,7 @@ namespace CreamInstaller.Forms
             allCheckBox.Checked = true;
             allCheckBox.CheckState = CheckState.Checked;
             allCheckBox.Enabled = false;
-            allCheckBox.FlatStyle = FlatStyle.System;
+            allCheckBox.FlatStyle = FlatStyle.Standard;
             allCheckBox.Location = new System.Drawing.Point(2, 0);
             allCheckBox.Margin = new Padding(2, 0, 0, 0);
             allCheckBox.Name = "allCheckBox";

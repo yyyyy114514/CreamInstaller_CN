@@ -226,6 +226,8 @@ internal static class ThemeManager
                 b.FlatAppearance.BorderColor = DarkBorder;
                 b.BackColor = DarkBackAlt;
                 b.ForeColor = DarkFore;
+                b.Paint -= DarkButtonPaint;
+                b.Paint += DarkButtonPaint;
                 break;
 
             // Checkboxes: match form background and foreground
@@ -324,6 +326,7 @@ internal static class ThemeManager
                 b.FlatStyle = FlatStyle.Standard;
                 b.BackColor = LightBack;
                 b.ForeColor = LightFore;
+                b.Paint -= DarkButtonPaint;
                 break;
             case CheckBox cb:
                 cb.BackColor = LightBack;
@@ -386,6 +389,18 @@ internal static class ThemeManager
                 cb.ForeColor = SystemColors.ControlText;
                 break;
         }
+    }
+
+    private static void DarkButtonPaint(object sender, PaintEventArgs e)
+    {
+        if (sender is not Button b || b.Enabled) return;
+        Rectangle client = b.ClientRectangle;
+        using (SolidBrush backBrush = new(DarkBackAlt))
+            e.Graphics.FillRectangle(backBrush, client);
+        using (Pen borderPen = new(DarkBorder))
+            e.Graphics.DrawRectangle(borderPen, client.X, client.Y, client.Width - 1, client.Height - 1);
+        TextRenderer.DrawText(e.Graphics, b.Text, b.Font, client, DarkForeDim,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
     }
 
     private static void Reset(Form form)

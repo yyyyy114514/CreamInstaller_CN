@@ -66,7 +66,7 @@ partial class SettingsForm
         // darkModeCheckBox
         // 
         darkModeCheckBox.AutoSize = false;
-        darkModeCheckBox.FlatStyle = FlatStyle.System;
+        darkModeCheckBox.FlatStyle = FlatStyle.Standard;
         darkModeCheckBox.Location = new Point(12, 20);
         darkModeCheckBox.Name = "darkModeCheckBox";
         darkModeCheckBox.Size = new Size(160, 22);
@@ -90,7 +90,7 @@ partial class SettingsForm
         // blockedGamesCheckBox
         // 
         blockedGamesCheckBox.AutoSize = false;
-        blockedGamesCheckBox.FlatStyle = FlatStyle.System;
+        blockedGamesCheckBox.FlatStyle = FlatStyle.Standard;
         blockedGamesCheckBox.Location = new Point(12, 22);
         blockedGamesCheckBox.Name = "blockedGamesCheckBox";
         blockedGamesCheckBox.Size = new Size(260, 22);
@@ -102,7 +102,7 @@ partial class SettingsForm
         // sortByNameCheckBox
         // 
         sortByNameCheckBox.AutoSize = false;
-        sortByNameCheckBox.FlatStyle = FlatStyle.System;
+        sortByNameCheckBox.FlatStyle = FlatStyle.Standard;
         sortByNameCheckBox.Location = new Point(12, 48);
         sortByNameCheckBox.Name = "sortByNameCheckBox";
         sortByNameCheckBox.Size = new Size(200, 22);
@@ -160,7 +160,7 @@ partial class SettingsForm
         // preReleaseCheckBox
         // 
         preReleaseCheckBox.AutoSize = false;
-        preReleaseCheckBox.FlatStyle = FlatStyle.System;
+        preReleaseCheckBox.FlatStyle = FlatStyle.Standard;
         preReleaseCheckBox.Location = new Point(12, 20);
         preReleaseCheckBox.Name = "preReleaseCheckBox";
         preReleaseCheckBox.Size = new Size(340, 22);
