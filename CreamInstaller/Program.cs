@@ -161,7 +161,7 @@ internal static class Program
                 {
                 HttpClientManager.Setup();
                 AppSettings = ProgramData.LoadSettings(); // load persisted settings
-                using MainForm form = new();
+                using MainForm form = MainForm.Current;
 #if DEBUG
                 DebugForm.Current.Open(form);
 #endif
