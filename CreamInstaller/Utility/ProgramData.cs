@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -12,6 +12,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
 namespace CreamInstaller.Utility;
+
+internal enum LogDestination { App, Scan, Steam, Unlocker }
+
+internal enum LogLevel { Info, Warning, Error }
 
 internal enum InstalledUnlocker
 {
@@ -29,6 +33,7 @@ internal sealed class InstalledDlcRecord
     public string DlcType { get; set; }
     public string Id { get; set; }
     public string Name { get; set; }
+    public bool Enabled { get; set; }
 }
 
 internal sealed class InstalledGameRecord
@@ -64,24 +69,29 @@ internal static class ProgramData
 
     private static readonly Version MinimumAppInfoVersion = Version.Parse("4.7.0.0");
 
-    internal static readonly string CooldownPath = DirectoryPath + @"\cooldown";
+    internal static readonly string CooldownPath = CachePath + @"\cooldown";
 
     private static readonly string OldProgramChoicesPath = DirectoryPath + @"\choices.txt";
-    private static readonly string SkipUpdateCheckPath = DirectoryPath + @"\skipupdatecheck.txt";
-    private static readonly string ProgramChoicesPath = DirectoryPath + @"\choices.json";
-    private static readonly string DlcChoicesPath = DirectoryPath + @"\dlc.json";
-    private static readonly string KoaloaderProxyChoicesPath = DirectoryPath + @"\proxies.json";
-    private static readonly string ExtraProtectionChoicesPath = DirectoryPath + @"\extraprotection.json";
+    private static readonly string OldProgramChoicesJsonPath = DirectoryPath + @"\choices.json";
+    private static readonly string OldKoaloaderProxyChoicesPath = DirectoryPath + @"\proxies.json";
+    private static readonly string OldExtraProtectionChoicesPath = DirectoryPath + @"\extraprotection.json";
+    private static readonly string ProgramChoicesPath = CachePath + @"\saved-game-choices.json";
+    private static readonly string KoaloaderProxyChoicesPath = CachePath + @"\proxies.json";
+    private static readonly string ExtraProtectionChoicesPath = CachePath + @"\extraprotection.json";
     private static readonly string InstalledGamesPath = CachePath + @"\installed.json";
+    private static readonly string SettingsPath = CachePath + @"\settings.json";
 
-    internal static readonly string ScanLogPath = Path.Combine(DirectoryPath, "game-scan.log");
-internal static readonly string SteamLogPath = Path.Combine(DirectoryPath, "cream-steam.log");
-internal static readonly string AppLogPath = Path.Combine(DirectoryPath, "CreamInstaller.log");
+    internal static bool CacheCleared { get; set; }
 
-internal static event Action<string> OnLog;
-internal static event Action<string> OnLogSteam;
-internal static event Action<string> OnLogWarning;
-internal static event Action<string> OnLogError;
+    internal static readonly string LogsPath = DirectoryPath + @"\Logs";
+    internal static readonly string ScanLogPath = LogsPath + @"\game-scan.log";
+    internal static readonly string SteamLogPath = LogsPath + @"\cream-steam.log";
+    internal static readonly string AppLogPath = LogsPath + @"\CreamInstaller.log";
+    internal static readonly string UnlockerLogPath = LogsPath + @"\unlocker.log";
+
+internal readonly record struct LogEventArgs(string Message, LogDestination Destination, LogLevel Level, Exception Exception = null);
+
+internal static event Action<LogEventArgs> OnLog;
 
     private static string FormatLogEntry(string message)
     {
@@ -141,59 +151,57 @@ internal static event Action<string> OnLogError;
         }
     }
 
-    internal static void Log(string message)
+    private static string GetLogPath(LogDestination destination) => destination switch
     {
-        try
-        {
-            LogChannel.Writer.TryWrite(new LogEntry(ScanLogPath, FormatLogEntry(message)));
-        }
-        catch
-        {
-            // ignored; logging must never crash the application
-        }
-        OnLog?.Invoke(message);
-    }
+        LogDestination.Scan => ScanLogPath,
+        LogDestination.Steam => SteamLogPath,
+        LogDestination.Unlocker => UnlockerLogPath,
+        _ => AppLogPath
+    };
 
-    internal static void LogSteam(string message)
+    internal static class Log
     {
-        try
+        public static void Info(string message, LogDestination destination = LogDestination.App)
         {
-            LogChannel.Writer.TryWrite(new LogEntry(SteamLogPath, FormatLogEntry(message)));
+            try
+            {
+                LogChannel.Writer.TryWrite(new LogEntry(GetLogPath(destination), FormatLogEntry(message)));
+            }
+            catch
+            {
+                // ignored; logging must never crash the application
+            }
+            OnLog?.Invoke(new LogEventArgs(message, destination, LogLevel.Info));
         }
-        catch
-        {
-            // ignored; logging must never crash the application
-        }
-        OnLogSteam?.Invoke(message);
-    }
 
-    internal static void LogWarning(string message)
-    {
-        try
+        public static void Warn(string message)
         {
-            LogChannel.Writer.TryWrite(new LogEntry(AppLogPath, FormatLogEntry($"[WARN] {message}")));
+            try
+            {
+                LogChannel.Writer.TryWrite(new LogEntry(AppLogPath, FormatLogEntry($"[WARN] {message}")));
+            }
+            catch
+            {
+                // ignored; logging must never crash the application
+            }
+            OnLog?.Invoke(new LogEventArgs(message, LogDestination.App, LogLevel.Warning));
         }
-        catch
-        {
-            // ignored; logging must never crash the application
-        }
-        OnLogWarning?.Invoke(message);
-    }
 
-    internal static void LogError(string message, Exception ex = null)
-    {
-        try
+        public static void Error(string message, Exception ex = null)
         {
-            string entry = ex is not null
-                ? FormatLogErrorEntry(message, ex)
-                : FormatLogEntry($"[ERROR] {message}");
-            LogChannel.Writer.TryWrite(new LogEntry(AppLogPath, entry));
+            try
+            {
+                string entry = ex is not null
+                    ? FormatLogErrorEntry(message, ex)
+                    : FormatLogEntry($"[ERROR] {message}");
+                LogChannel.Writer.TryWrite(new LogEntry(AppLogPath, entry));
+            }
+            catch
+            {
+                // ignored; logging must never crash the application
+            }
+            OnLog?.Invoke(new LogEventArgs(message, LogDestination.App, LogLevel.Error, ex));
         }
-        catch
-        {
-            // ignored; logging must never crash the application
-        }
-        OnLogError?.Invoke(message);
     }
 
     internal static void ClearLog()
@@ -204,25 +212,12 @@ internal static event Action<string> OnLogError;
                 File.Delete(ScanLogPath);
             if (File.Exists(SteamLogPath))
                 File.Delete(SteamLogPath);
+            if (File.Exists(UnlockerLogPath))
+                File.Delete(UnlockerLogPath);
         }
         catch
         {
             // ignored
-        }
-    }
-
-    internal static bool SkipUpdateCheck
-    {
-        get
-        {
-            if (!SkipUpdateCheckPath.FileExists())
-                return true;
-            return bool.TryParse(SkipUpdateCheckPath.ReadFile(), out bool value) && value;
-        }
-        set
-        {
-            Directory.CreateDirectory(DirectoryPath);
-            SkipUpdateCheckPath.WriteFile(value.ToString());
         }
     }
 
@@ -242,13 +237,48 @@ internal static event Action<string> OnLogError;
             {
                 AppInfoPath.DeleteDirectory();
                 AppInfoPath.CreateDirectory();
-                AppInfoVersionPath.WriteFile(Program.Version);
+                AppInfoVersionPath.WriteFile(Program.VersionBase);
             }
 
             CooldownPath.CreateDirectory();
+            CachePath.CreateDirectory();
             if (OldProgramChoicesPath.FileExists())
                 OldProgramChoicesPath.DeleteFile();
+            MigrateOldPath(OldProgramChoicesJsonPath, ProgramChoicesPath);
+            MigrateOldPath(OldKoaloaderProxyChoicesPath, KoaloaderProxyChoicesPath);
+            MigrateOldPath(OldExtraProtectionChoicesPath, ExtraProtectionChoicesPath);
+            LogsPath.CreateDirectory();
+            MigrateOldPath(DirectoryPath + @"\game-scan.log", ScanLogPath);
+            MigrateOldPath(DirectoryPath + @"\cream-steam.log", SteamLogPath);
+            MigrateOldPath(DirectoryPath + @"\CreamInstaller.log", AppLogPath);
+            MigrateOldPath(DirectoryPath + @"\unlocker.log", UnlockerLogPath);
+
+            // cleanup legacy paths no longer used
+            string oldCooldown = DirectoryPath + @"\cooldown";
+            try { if (Directory.Exists(oldCooldown)) Directory.Delete(oldCooldown, true); } catch { }
         });
+
+    private static void MigrateOldPath(string oldPath, string newPath)
+    {
+        if (!oldPath.FileExists())
+            return;
+        if (newPath.FileExists())
+        {
+            oldPath.DeleteFile();
+            return;
+        }
+        try
+        {
+            string content = oldPath.ReadFile();
+            newPath.WriteFile(content);
+            oldPath.DeleteFile();
+            Log.Info($"Migrated {Path.GetFileName(oldPath)} -> {Path.GetFileName(newPath)}");
+        }
+        catch
+        {
+            // ignored; migration failure must not crash the application
+        }
+    }
 
     private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, DateTime> CooldownCache = new();
 
@@ -332,39 +362,6 @@ internal static event Action<string> OnLogError;
                 ProgramChoicesPath.DeleteFile();
             else
                 ProgramChoicesPath.WriteFile(JsonConvert.SerializeObject(choices));
-        }
-        catch
-        {
-            // ignored
-        }
-    }
-
-    internal static IEnumerable<(Platform platform, string gameId, string dlcId)> ReadDlcChoices()
-    {
-        if (DlcChoicesPath.FileExists())
-            try
-            {
-                if (JsonConvert.DeserializeObject(DlcChoicesPath.ReadFile(),
-                        typeof(IEnumerable<(Platform platform, string gameId, string dlcId)>)) is
-                    IEnumerable<(Platform platform, string gameId, string dlcId)> choices)
-                    return choices;
-            }
-            catch
-            {
-                // ignored
-            }
-
-        return [];
-    }
-
-    internal static void WriteDlcChoices(List<(Platform platform, string gameId, string dlcId)> choices)
-    {
-        try
-        {
-            if (choices is null || choices.Count == 0)
-                DlcChoicesPath.DeleteFile();
-            else
-                DlcChoicesPath.WriteFile(JsonConvert.SerializeObject(choices));
         }
         catch
         {
@@ -485,5 +482,32 @@ internal static event Action<string> OnLogError;
         List<InstalledGameRecord> records = ReadInstalledGames();
         if (records.RemoveAll(r => r.Platform == platform && r.Id == id) > 0)
             WriteInstalledGames(records);
+    }
+
+    internal static SettingsModel LoadSettings()
+    {
+        try
+        {
+            if (JsonConvert.DeserializeObject<SettingsModel>(SettingsPath.ReadFile()) is SettingsModel settings)
+                return settings;
+        }
+        catch
+        {
+            // ignored
+        }
+
+        return new SettingsModel();
+    }
+
+    internal static void SaveSettings(SettingsModel settings)
+    {
+        try
+        {
+            SettingsPath.WriteFile(JsonConvert.SerializeObject(settings, Formatting.Indented));
+        }
+        catch
+        {
+            // ignored
+        }
     }
 }

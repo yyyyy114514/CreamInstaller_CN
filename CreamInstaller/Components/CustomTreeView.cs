@@ -13,8 +13,8 @@ namespace CreamInstaller.Components;
 
 internal sealed class CustomTreeView : TreeView
 {
-    private static string ProxyToggleString => Locale.Get("Proxy");
-    private static string ExtraProtectionToggleString => Locale.Get("ExtraProtection");
+    private const string ProxyToggleString = "Proxy";
+    private const string ExtraProtectionToggleString = "Extra Protection";
 
     private readonly Dictionary<Selection, Rectangle> checkBoxBounds = [];
     private readonly Dictionary<Selection, Rectangle> extraProtectionCheckBoxBounds = [];
@@ -36,7 +36,6 @@ internal sealed class CustomTreeView : TreeView
     {
             ShowNodeToolTips = true;
             DrawMode = TreeViewDrawMode.OwnerDrawAll;
-        Invalidated += OnInvalidated;
         DrawNode += DrawTreeNode;
         Disposed += OnDisposed;
     }
@@ -60,21 +59,6 @@ internal sealed class CustomTreeView : TreeView
         comboBoxFont = null;
         comboBoxDropDown?.Dispose();
         comboBoxDropDown = null;
-    }
-
-    private void OnInvalidated(object sender, EventArgs e)
-    {
-        checkBoxBounds.Clear();
-        extraProtectionCheckBoxBounds.Clear();
-        comboBoxBounds.Clear();
-        selectionBounds.Clear();
-        backBrush?.Dispose();
-        backBrush = null;
-        lastBackColor = Color.Empty;
-
-        selectionBrush?.Dispose();
-        selectionBrush = null;
-        lastSelectionBackColor = Color.Empty;
     }
 
     private void DrawTreeNode(object sender, DrawTreeNodeEventArgs e)
@@ -199,7 +183,7 @@ internal sealed class CustomTreeView : TreeView
         Rectangle bounds = node.Bounds;
         Rectangle selectionBounds = bounds;
 
-        if (form is not SelectForm and not SelectDialogForm)
+        if (form is not MainForm and not ScanDialog)
             return;
 
         string id = node.Name;
@@ -226,7 +210,7 @@ internal sealed class CustomTreeView : TreeView
             {
                 Selection selection = Selection.FromId(platform, id);
                 if (selection is not null && selection.SteamApiDllMissing)
-                    text = Locale.Get("ProxyOnly");
+                    text = "Proxy Only";
             }
         }
 
@@ -255,7 +239,24 @@ internal sealed class CustomTreeView : TreeView
             TextRenderer.DrawText(graphics, text, font, point, color, TextFormatFlags.Default);
         }
 
-        if (form is SelectForm)
+        // Draw "NEW" tag after the AppID for newly discovered DLCs
+        if (dlcType is not DLCType.None)
+        {
+            SelectionDLC dlc = SelectionDLC.FromId(dlcType, node.Parent?.Name, id);
+            if (dlc?.IsNew == true)
+            {
+                const string newTag = " NEW";
+                size = TextRenderer.MeasureText(graphics, newTag, font);
+                bounds = bounds with { X = bounds.X + bounds.Width + 1, Width = size.Width };
+                selectionBounds = new(selectionBounds.Location,
+                    selectionBounds.Size + new Size(bounds.Size.Width + 1, 0));
+                graphics.FillRectangle(brush, bounds);
+                point = new(bounds.Location.X - 1, bounds.Location.Y + 1);
+                TextRenderer.DrawText(graphics, newTag, font, point, Color.Orange, TextFormatFlags.Default);
+            }
+        }
+
+        if (form is MainForm)
         {
             Selection selection = Selection.FromId(platform, id);
             if (selection is not null)
@@ -325,7 +326,7 @@ internal sealed class CustomTreeView : TreeView
                         graphics.DrawRectangle(badgePen, badgeBounds);
                     TextRenderer.DrawText(graphics, badgeText, font,
                         new Point(badgeBounds.X + badgePadding, badgeBounds.Y + 1),
-                        Color.White, TextFormatFlags.NoPadding);
+                        GetBadgeTextColor(badgeBack), TextFormatFlags.NoPadding);
                     bounds = bounds with { X = badgeBounds.X, Width = badgeBounds.Width + 2 };
                 }
 
@@ -359,14 +360,11 @@ internal sealed class CustomTreeView : TreeView
                     bounds = bounds with { X = bounds.X + bounds.Width, Width = size.Width + leftEP };
                     selectionBounds = new(selectionBounds.Location, selectionBounds.Size + bounds.Size with { Height = 0 });
                     extraProtCheckBoxBounds = new(extraProtCheckBoxBounds.Location, extraProtCheckBoxBounds.Size + bounds.Size with { Height = 0 });
-                    color = highlighted
-                    ? ThemeManager.CustomTreeViewHighlightProxyColor
-                    : Enabled
-                        ? ThemeManager.CustomTreeViewProxyColor
-                        : ThemeManager.CustomTreeViewDisabledProxyColor;
-                graphics.FillRectangle(brush, bounds);
-                point = new(bounds.Location.X - 1 + leftEP, bounds.Location.Y + 1);
-                TextRenderer.DrawText(graphics, text, font, point, color, TextFormatFlags.Default);
+                    graphics.FillRectangle(brush, bounds);
+                    point = new(bounds.Location.X - 1 + leftEP, bounds.Location.Y + 1);
+                    TextRenderer.DrawText(graphics, text, font, point,
+                        Enabled ? ThemeManager.CustomTreeViewProxyColor : ThemeManager.CustomTreeViewDisabledProxyColor,
+                        TextFormatFlags.Default);
 
                     extraProtectionCheckBoxBounds[selection] = RectangleToClient(extraProtCheckBoxBounds);
 
@@ -396,14 +394,11 @@ internal sealed class CustomTreeView : TreeView
                 bounds = bounds with { X = bounds.X + bounds.Width, Width = size.Width + left };
                 selectionBounds = new(selectionBounds.Location, selectionBounds.Size + bounds.Size with { Height = 0 });
                 checkBoxBounds = new(checkBoxBounds.Location, checkBoxBounds.Size + bounds.Size with { Height = 0 });
-                color = highlighted
-                    ? ThemeManager.CustomTreeViewHighlightProxyColor
-                    : Enabled
-                        ? ThemeManager.CustomTreeViewProxyColor
-                        : ThemeManager.CustomTreeViewDisabledProxyColor;
                 graphics.FillRectangle(brush, bounds);
                 point = new(bounds.Location.X - 1 + left, bounds.Location.Y + 1);
-                TextRenderer.DrawText(graphics, text, font, point, color, TextFormatFlags.Default);
+                TextRenderer.DrawText(graphics, text, font, point,
+                    Enabled ? ThemeManager.CustomTreeViewProxyColor : ThemeManager.CustomTreeViewDisabledProxyColor,
+                    TextFormatFlags.Default);
 
                 this.checkBoxBounds[selection] = RectangleToClient(checkBoxBounds);
 
@@ -449,16 +444,18 @@ internal sealed class CustomTreeView : TreeView
         this.selectionBounds[node] = RectangleToClient(selectionBounds);
     }
 
+    private static Color GetBadgeTextColor(Color backColor) =>
+        backColor.GetBrightness() > 0.5f ? Color.Black : Color.White;
+
     protected override void OnMouseDown(MouseEventArgs e)
     {
         base.OnMouseDown(e);
-        Refresh();
         Point clickPoint = PointToClient(e.Location);
-        SelectForm selectForm = (form ??= FindForm()) as SelectForm;
-        foreach (KeyValuePair<TreeNode, Rectangle> pair in selectionBounds)
-            if (pair.Key.TreeView is null)
+        MainForm selectForm = (form ??= FindForm()) as MainForm;
+        foreach (KeyValuePair<TreeNode, Rectangle> pair in selectionBounds.ToArray())
+            if (pair.Key.TreeView is null || pair.Key.Bounds.IsEmpty)
                 _ = selectionBounds.Remove(pair.Key);
-            else if (pair.Key.IsVisible && pair.Value.Contains(clickPoint))
+            else if (pair.Value.Contains(clickPoint))
             {
                 SelectedNode = pair.Key;
                 if (e.Button is MouseButtons.Right && selectForm is not null)
@@ -470,8 +467,8 @@ internal sealed class CustomTreeView : TreeView
             return;
 
         if (comboBoxBounds.Count > 0 && selectForm is not null)
-            foreach (KeyValuePair<Selection, Rectangle> pair in comboBoxBounds)
-                if (!Selection.All.ContainsKey(pair.Key))
+            foreach (KeyValuePair<Selection, Rectangle> pair in comboBoxBounds.ToArray())
+                if (!Selection.All.ContainsKey(pair.Key) || pair.Key.TreeNode.Bounds.IsEmpty)
                     _ = comboBoxBounds.Remove(pair.Key);
                 else if (pair.Value.Contains(clickPoint))
                 {
@@ -515,8 +512,8 @@ internal sealed class CustomTreeView : TreeView
                     break;
                 }
 
-        foreach (KeyValuePair<Selection, Rectangle> pair in checkBoxBounds)
-            if (!Selection.All.ContainsKey(pair.Key))
+        foreach (KeyValuePair<Selection, Rectangle> pair in checkBoxBounds.ToArray())
+            if (!Selection.All.ContainsKey(pair.Key) || pair.Key.TreeNode.Bounds.IsEmpty)
                 _ = checkBoxBounds.Remove(pair.Key);
             else if (pair.Value.Contains(clickPoint))
             {
@@ -527,8 +524,8 @@ internal sealed class CustomTreeView : TreeView
                 break;
             }
 
-        foreach (KeyValuePair<Selection, Rectangle> pair in extraProtectionCheckBoxBounds)
-            if (!Selection.All.ContainsKey(pair.Key))
+        foreach (KeyValuePair<Selection, Rectangle> pair in extraProtectionCheckBoxBounds.ToArray())
+            if (!Selection.All.ContainsKey(pair.Key) || pair.Key.TreeNode.Bounds.IsEmpty)
                 _ = extraProtectionCheckBoxBounds.Remove(pair.Key);
             else if (pair.Value.Contains(clickPoint))
             {

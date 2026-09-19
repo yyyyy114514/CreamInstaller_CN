@@ -4,17 +4,18 @@
         <TargetFramework>net8.0-windows10.0.22621.0</TargetFramework>
         <UseWindowsForms>True</UseWindowsForms>
         <ApplicationIcon>Resources\program.ico</ApplicationIcon>
-        <Version>5.0.2.3</Version>
+        <Version>5.1.0.0</Version>
         <Copyright>2026, FroggMaster (https://github.com/FroggMaster)</Copyright>
         <Company>CreamInstaller</Company>
         <Product>Automatic DLC Unlocker Installer &amp; Configuration Generator</Product>
+        <PublishSingleFile>true</PublishSingleFile>
+        <SelfContained>true</SelfContained>
         <StartupObject>CreamInstaller.Program</StartupObject>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
         <AnalysisLevel>latest-recommended</AnalysisLevel>
         <PlatformTarget>x64</PlatformTarget>
         <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
-        <EnableCompressionInSingleFile Condition="'$(SelfContained)' == 'true'">true</EnableCompressionInSingleFile>
-        <EnableCompressionInSingleFile Condition="'$(SelfContained)' != 'true'">false</EnableCompressionInSingleFile>
+        <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
         <Deterministic>true</Deterministic>
         <Optimize>True</Optimize>
         <DebugType>embedded</DebugType>
@@ -29,8 +30,6 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)'=='Release'">
         <AssemblyName>$(Company)</AssemblyName>
-        <PublishSingleFile>true</PublishSingleFile>
-        <SelfContained>true</SelfContained>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)'=='Debug'">
         <AssemblyName>$(Company)-debug</AssemblyName>
@@ -97,6 +96,8 @@
     </ItemGroup>
     <ItemGroup>
         <Content Include="Resources\program.ico" />
+    </ItemGroup>
+    <ItemGroup>
         <EmbeddedResource Include="Resources\Languages\en-US.json" />
         <EmbeddedResource Include="Resources\Languages\zh-CN.json" />
     </ItemGroup>
@@ -174,13 +175,21 @@
         <Compile Update="Forms\InstallForm.cs">
             <SubType>Form</SubType>
         </Compile>
-        <Compile Update="Forms\SelectDialogForm.cs">
+        <Compile Update="Forms\ScanDialog.cs">
             <SubType>Form</SubType>
         </Compile>
-        <Compile Update="Forms\SelectForm.cs">
+        <Compile Update="Forms\MainForm.cs">
             <SubType>Form</SubType>
         </Compile>
-
+        <Compile Update="Forms\UpdateForm.cs">
+            <SubType>Form</SubType>
+        </Compile>
+        <Compile Update="Forms\SettingsForm.cs">
+            <SubType>Form</SubType>
+        </Compile>
+        <Compile Update="Forms\TestGameForm.cs">
+            <SubType>Form</SubType>
+        </Compile>
         <Compile Update="Properties\Resources.Designer.cs">
             <DesignTime>True</DesignTime>
             <AutoGen>True</AutoGen>
@@ -197,13 +206,18 @@
         <EmbeddedResource Update="Forms\InstallForm.resx">
             <SubType>Designer</SubType>
         </EmbeddedResource>
-        <EmbeddedResource Update="Forms\SelectDialogForm.resx">
+        <EmbeddedResource Update="Forms\ScanDialog.resx">
             <SubType>Designer</SubType>
         </EmbeddedResource>
-        <EmbeddedResource Update="Forms\SelectForm.resx">
+        <EmbeddedResource Update="Forms\MainForm.resx">
             <SubType>Designer</SubType>
         </EmbeddedResource>
-
+        <EmbeddedResource Update="Forms\UpdateForm.resx">
+            <SubType>Designer</SubType>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Forms\TestGameForm.resx">
+            <SubType>Designer</SubType>
+        </EmbeddedResource>
         <EmbeddedResource Update="Properties\Resources.resx">
             <Generator>ResXFileCodeGenerator</Generator>
             <LastGenOutput>Resources.Designer.cs</LastGenOutput>

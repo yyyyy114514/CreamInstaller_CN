@@ -53,9 +53,9 @@ internal static class ExceptionHandler
         string acceptButtonText = null,
         string cancelButtonText = null)
     {
-        caption ??= Locale.Format("ExceptionCaption", Program.Name);
         acceptButtonText ??= Locale.Get("Retry");
         cancelButtonText ??= Locale.Get("Cancel");
+        caption ??= Locale.Format("ExceptionCaption", Program.Name);
         string outputString = e.FormatException();
         if (string.IsNullOrWhiteSpace(outputString))
             outputString = e?.ToString() ?? Locale.Get("UnknownException");
@@ -66,8 +66,7 @@ internal static class ExceptionHandler
 
     internal static void HandleFatalException(this Exception e)
     {
-        e.HandleException(caption: Locale.Format("FatalExceptionCaption", Program.Name),
-            acceptButtonText: Locale.Get("OK"),
+        e.HandleException(caption: Locale.Format("FatalExceptionCaption", Program.Name), acceptButtonText: Locale.Get("OK"),
             cancelButtonText: null);
         Application.Exit();
     }

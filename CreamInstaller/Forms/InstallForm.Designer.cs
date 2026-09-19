@@ -1,5 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Forms;
+using CreamInstaller.Utility;
 
 namespace CreamInstaller.Forms
 {
@@ -46,7 +47,7 @@ namespace CreamInstaller.Forms
             userInfoLabel.Name = "userInfoLabel";
             userInfoLabel.Size = new System.Drawing.Size(760, 15);
             userInfoLabel.TabIndex = 2;
-            userInfoLabel.Text = "Loading . . . ";
+            userInfoLabel.Text = Locale.Get("Loading");
             // 
             // acceptButton
             // 
@@ -56,7 +57,7 @@ namespace CreamInstaller.Forms
             acceptButton.Name = "acceptButton";
             acceptButton.Size = new System.Drawing.Size(75, 23);
             acceptButton.TabIndex = 4;
-            acceptButton.Text = "OK";
+            acceptButton.Text = Locale.Get("OK");
             acceptButton.UseVisualStyleBackColor = true;
             acceptButton.Click += OnAccept;
             // 
@@ -68,7 +69,7 @@ namespace CreamInstaller.Forms
             retryButton.Name = "retryButton";
             retryButton.Size = new System.Drawing.Size(75, 23);
             retryButton.TabIndex = 3;
-            retryButton.Text = "Retry";
+            retryButton.Text = Locale.Get("Retry");
             retryButton.UseVisualStyleBackColor = true;
             retryButton.Click += OnRetry;
             // 
@@ -79,7 +80,7 @@ namespace CreamInstaller.Forms
             cancelButton.Name = "cancelButton";
             cancelButton.Size = new System.Drawing.Size(75, 23);
             cancelButton.TabIndex = 1;
-            cancelButton.Text = "Cancel";
+            cancelButton.Text = Locale.Get("Cancel");
             cancelButton.UseVisualStyleBackColor = true;
             cancelButton.Click += OnCancel;
             // 
@@ -103,7 +104,7 @@ namespace CreamInstaller.Forms
             reselectButton.Name = "reselectButton";
             reselectButton.Size = new System.Drawing.Size(200, 23);
             reselectButton.TabIndex = 2;
-            reselectButton.Text = "Reselect Programs / Games";
+            reselectButton.Text = Locale.Get("ReselectProgramsGames");
             reselectButton.UseVisualStyleBackColor = true;
             reselectButton.Click += OnReselect;
             // 

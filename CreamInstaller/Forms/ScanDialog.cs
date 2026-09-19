@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -7,29 +7,15 @@ using CreamInstaller.Utility;
 
 namespace CreamInstaller.Forms;
 
-internal sealed partial class SelectDialogForm : CustomForm
+internal sealed partial class ScanDialog : CustomForm
 {
     private readonly List<(Platform platform, string id, string name)> selected = new();
     private readonly List<(Platform platform, string id, string name, bool alreadySelected)> allChoices = new();
 
-    internal SelectDialogForm(IWin32Window owner) : base(owner)
+    internal ScanDialog(IWin32Window owner) : base(owner)
     {
         InitializeComponent();
-        ApplyLocale();
         selectionTreeView.TreeViewNodeSorter = sortCheckBox.Checked ? PlatformIdComparer.NodeText : PlatformIdComparer.NodeName;
-    }
-
-    private void ApplyLocale()
-    {
-        acceptButton.Text = Locale.Get("OK");
-        cancelButton.Text = Locale.Get("Cancel");
-        loadButton.Text = Locale.Get("Load");
-        saveButton.Text = Locale.Get("Save");
-        allCheckBox.Text = Locale.Get("All");
-        sortCheckBox.Text = Locale.Get("SortByName");
-        uninstallAllButton.Text = Locale.Get("UninstallAll");
-        filterTextBox.PlaceholderText = Locale.Get("EnterGameNameToSearch");
-        groupBox.Text = Locale.Get("Choices");
     }
 
     internal DialogResult QueryUser(string groupBoxText,
@@ -96,7 +82,8 @@ internal sealed partial class SelectDialogForm : CustomForm
         bool hasSelections = selected.Count > 0;
         foreach ((Platform platform, string id, string name, bool alreadySelected) in allChoices)
         {
-            if (filter.Length > 0 && name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0)
+            if (filter.Length > 0 && name.IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0
+                && id.IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0)
                 continue;
             bool checkedState = hasSelections
                 ? selected.Any(s => s.platform == platform && s.id == id)

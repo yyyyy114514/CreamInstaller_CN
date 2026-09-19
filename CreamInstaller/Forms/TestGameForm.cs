@@ -32,27 +32,10 @@ internal sealed partial class TestGameForm : CustomForm
     internal TestGameForm(IWin32Window owner) : base(owner)
     {
         InitializeComponent();
-        ApplyLocale();
         appIdTextBox.Leave += OnAppIdLeave;
         appIdTextBox.KeyDown += OnAppIdKeyDown;
         gameNameTextBox.KeyDown += OnGameNameKeyDown;
         UpdatePlatformMode();
-    }
-
-    private void ApplyLocale()
-    {
-        Text = Locale.Get("TestGameGenerator");
-        platformGroupBox.Text = Locale.Get("Platform");
-        steamRadioButton.Text = Locale.Get("Steam");
-        epicRadioButton.Text = Locale.Get("Epic");
-        ubisoftRadioButton.Text = Locale.Get("Ubisoft");
-        appIdLabel.Text = Locale.Get("AppID");
-        gameNameLabel.Text = Locale.Get("GameName");
-        epicSearchButton.Text = Locale.Get("Search");
-        ubisoftSearchButton.Text = Locale.Get("Search");
-        generateButton.Text = Locale.Get("GenerateTestGame");
-        clearButton.Text = Locale.Get("ClearAllTests");
-        closeButton.Text = Locale.Get("Close");
     }
 
     private void UpdatePlatformMode()
@@ -125,7 +108,7 @@ internal sealed partial class TestGameForm : CustomForm
                 if (!string.IsNullOrWhiteSpace(title))
                     return title;
             }
-            catch (Exception ex) { ProgramData.LogWarning($"[TestGame] Store name lookup failed for AppID {appId}: {ex.Message}"); /* fall through to SteamCMD */ }
+            catch (Exception ex) { ProgramData.Log.Warn($"[TestGame] Store name lookup failed for AppID {appId}: {ex.Message}"); /* fall through to SteamCMD */ }
 
             CmdAppData cmdData = await SteamCMD.GetAppInfo(appId);
             return cmdData?.Common?.Name;
@@ -136,7 +119,7 @@ internal sealed partial class TestGameForm : CustomForm
         if (name is not null)
         {
             gameNameTextBox.Text = name;
-            SetStatus("✓ " + Locale.Format("GameNameDetected", name));
+            SetStatus(Locale.Format("GameNameDetectedSuccess", name));
         }
         else
         {
@@ -151,7 +134,7 @@ internal sealed partial class TestGameForm : CustomForm
         string keyword = gameNameTextBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(keyword))
         {
-            SetStatus(Locale.Get("SearchByNameHint"));
+            SetStatus(Locale.Get("EnterGameNameToSearch"));
             return;
         }
 
@@ -187,7 +170,7 @@ internal sealed partial class TestGameForm : CustomForm
         if (idx < 0 || idx >= epicSearchResults.Count)
             return;
         gameNameTextBox.Text = epicSearchResults[idx].name;
-        SetStatus("✓ " + Locale.Format("Selected", epicSearchResults[idx].name));
+        SetStatus(Locale.Format("SelectedSuccess", epicSearchResults[idx].name));
     }
 
     // ── Ubisoft: search by name ──────────────────────────────────────────────
@@ -197,7 +180,7 @@ internal sealed partial class TestGameForm : CustomForm
         string keyword = gameNameTextBox.Text.Trim();
         if (string.IsNullOrWhiteSpace(keyword))
         {
-            SetStatus(Locale.Get("SearchByNameHint"));
+            SetStatus(Locale.Get("EnterGameNameToSearch"));
             return;
         }
 
@@ -233,7 +216,7 @@ internal sealed partial class TestGameForm : CustomForm
         if (idx < 0 || idx >= ubisoftSearchResults.Count)
             return;
         gameNameTextBox.Text = ubisoftSearchResults[idx].name;
-        SetStatus("✓ " + Locale.Format("Selected", ubisoftSearchResults[idx].name));
+        SetStatus(Locale.Format("SelectedSuccess", ubisoftSearchResults[idx].name));
     }
 
     // ── Enter key handlers ───────────────────────────────────────────────────
@@ -305,8 +288,8 @@ internal sealed partial class TestGameForm : CustomForm
 
             CreatedDirectories.Add(gameDir);
             SteamLibrary.TestGames.Add((appId, gameName, "public", 1, gameDir));
-            ProgramData.Log($"[TestGame] Steam: {gameName} ({appId}) at {gameDir}");
-            SetStatus("✓ " + Locale.Format("SteamTestGameGenerated", gameName, appId));
+            ProgramData.Log.Info($"[TestGame] Steam: {gameName} ({appId}) at {gameDir}", LogDestination.Scan);
+            SetStatus(Locale.Format("SteamTestGameGeneratedSuccess", gameName, appId));
         }
         catch (Exception ex)
         {
@@ -360,8 +343,8 @@ internal sealed partial class TestGameForm : CustomForm
                 InstallLocation = gameDir
             });
 
-            ProgramData.Log($"[TestGame] Epic: {gameName} ({catalogNamespace}) at {gameDir}");
-            SetStatus("✓ " + Locale.Format("EpicTestGameGenerated", gameName));
+            ProgramData.Log.Info($"[TestGame] Epic: {gameName} ({catalogNamespace}) at {gameDir}", LogDestination.Scan);
+            SetStatus(Locale.Format("EpicTestGameGeneratedSuccess", gameName));
         }
         catch (Exception ex)
         {
@@ -410,8 +393,8 @@ internal sealed partial class TestGameForm : CustomForm
 
             CreatedDirectories.Add(gameDir);
             UbisoftLibrary.TestGames.Add((gameId, gameName, gameDir));
-            ProgramData.Log($"[TestGame] Ubisoft: {gameName} ({gameId}) at {gameDir}");
-            SetStatus("✓ " + Locale.Format("UbisoftTestGameGenerated", gameName, gameId));
+            ProgramData.Log.Info($"[TestGame] Ubisoft: {gameName} ({gameId}) at {gameDir}", LogDestination.Scan);
+            SetStatus(Locale.Format("UbisoftTestGameGeneratedSuccess", gameName, gameId));
         }
         catch (Exception ex)
         {
@@ -427,17 +410,17 @@ internal sealed partial class TestGameForm : CustomForm
         EpicLibrary.TestManifests.Clear();
         UbisoftLibrary.TestGames.Clear();
         foreach (string dir in CreatedDirectories)
-            try { Directory.Delete(dir, true); } catch (Exception ex) { ProgramData.LogWarning($"[TestGame] Cleanup deletion failed for {dir}: {ex.Message}"); }
+            try { Directory.Delete(dir, true); } catch (Exception ex) { ProgramData.Log.Warn($"[TestGame] Cleanup deletion failed for {dir}: {ex.Message}"); }
         CreatedDirectories.Clear();
         if (Directory.Exists(TestGamesRoot))
-            try { Directory.Delete(TestGamesRoot, true); } catch (Exception ex) { ProgramData.LogWarning($"[TestGame] Cleanup failed to delete TestGames root: {ex.Message}"); }
+            try { Directory.Delete(TestGamesRoot, true); } catch (Exception ex) { ProgramData.Log.Warn($"[TestGame] Cleanup failed to delete TestGames root: {ex.Message}"); }
         // Remove any installed.json records for test games (e.g. if an unlocker was installed to a test game)
         List<InstalledGameRecord> installedRecords = ProgramData.ReadInstalledGames();
         int removed = installedRecords.RemoveAll(r => r.RootDirectory?.StartsWith(TestGamesRoot, StringComparison.OrdinalIgnoreCase) == true);
         if (removed > 0)
         {
             ProgramData.WriteInstalledGames(installedRecords);
-            ProgramData.Log($"[TestGame] Removed {removed} stale installed-game record(s) from test games.");
+            ProgramData.Log.Info($"[TestGame] Removed {removed} stale installed-game record(s) from test games.", LogDestination.Scan);
         }
         // Remove any Selection entries under the TestGames root so the main game list updates immediately
         foreach (Selection selection in Selection.All.Keys.ToHashSet().Where(s =>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using CreamInstaller.Components;
@@ -13,19 +13,10 @@ internal sealed partial class DebugForm : CustomForm
 
     internal static bool IsOpen { get; private set; }
 
-    private Form attachedForm;
-
     private DebugForm()
     {
         InitializeComponent();
-        ApplyLocale();
         debugTextBox.BackColor = LogTextBox.Background;
-    }
-
-    private void ApplyLocale()
-    {
-        Text = Locale.Get("Debug");
-        testGameButton.Text = Locale.Get("TestGame");
     }
 
     internal static DebugForm Current
@@ -43,71 +34,56 @@ internal sealed partial class DebugForm : CustomForm
         }
     }
 
-    protected override void WndProc(ref Message message) // make form immovable by user
+    internal void Open(Form owner = null)
     {
-        if (message.Msg == 0x0112) // WM_SYSCOMMAND
-        {
-            int command = message.WParam.ToInt32() & 0xFFF0;
-            if (command == 0xF010) // SC_MOVE
-                return;
-        }
-
-        base.WndProc(ref message);
-    }
-
-    internal void Attach(Form form)
-    {
-        if (attachedForm is not null)
-        {
-            attachedForm.Activated -= OnChange;
-            attachedForm.LocationChanged -= OnChange;
-            attachedForm.SizeChanged -= OnChange;
-            attachedForm.VisibleChanged -= OnChange;
-        }
-
-        attachedForm = form;
-        attachedForm.Activated += OnChange;
-        attachedForm.LocationChanged += OnChange;
-        attachedForm.SizeChanged += OnChange;
-        attachedForm.VisibleChanged += OnChange;
-        UpdateAttachment();
-
         if (!IsOpen)
         {
             IsOpen = true;
-            ProgramData.OnLog += msg =>
+            ProgramData.OnLog += args =>
             {
-                Color color = msg switch
+                Color color = args.Level switch
                 {
-                    string m when m.Contains("not found", StringComparison.OrdinalIgnoreCase) => LogTextBox.Failure,
-                    string m when m.Contains("Skipping", StringComparison.Ordinal) || m.Contains("skipped", StringComparison.Ordinal) || m.Contains("not accessible", StringComparison.Ordinal) => LogTextBox.Warning,
-                    _ => LogTextBox.Action
+                    LogLevel.Warning => LogTextBox.Warning,
+                    LogLevel.Error => LogTextBox.Error,
+                    _ => args.Message switch
+                    {
+                        string m when m.Contains("not found", StringComparison.OrdinalIgnoreCase) => LogTextBox.Failure,
+                        string m when m.Contains("Skipping", StringComparison.Ordinal) || m.Contains("skipped", StringComparison.Ordinal) || m.Contains("not accessible", StringComparison.Ordinal) => LogTextBox.Warning,
+                        string m when m.Contains("failed", StringComparison.OrdinalIgnoreCase) || m.Contains("timed out", StringComparison.OrdinalIgnoreCase) || m.Contains("cancelled", StringComparison.OrdinalIgnoreCase) || m.Contains("rate limited", StringComparison.OrdinalIgnoreCase) || m.Contains("unsuccessful", StringComparison.OrdinalIgnoreCase) || m.Contains("exceeded", StringComparison.OrdinalIgnoreCase) => LogTextBox.Failure,
+                        _ => LogTextBox.Action
+                    }
                 };
-                Log(msg, color);
+                Log(args.Message, color);
             };
-            ProgramData.OnLogSteam += msg =>
-            {
-                Color color = msg switch
-                {
-                    string m when m.Contains("failed", StringComparison.OrdinalIgnoreCase) || m.Contains("timed out", StringComparison.OrdinalIgnoreCase) || m.Contains("cancelled", StringComparison.OrdinalIgnoreCase) || m.Contains("rate limited", StringComparison.OrdinalIgnoreCase) || m.Contains("unsuccessful", StringComparison.OrdinalIgnoreCase) || m.Contains("exceeded", StringComparison.OrdinalIgnoreCase) => LogTextBox.Failure,
-                    _ => LogTextBox.Action
-                };
-                Log(msg, color);
-            };
-            ProgramData.OnLogWarning += msg => Log(msg, LogTextBox.Warning);
-            ProgramData.OnLogError += msg => Log(msg, LogTextBox.Error);
         }
-    }
-
-    private void OnChange(object sender, EventArgs args) => UpdateAttachment();
-
-    private void UpdateAttachment()
-    {
-        if (attachedForm is null || !attachedForm.Visible)
-            return;
-        //Size = new(Size.Width, attachedForm.Size.Height);
-        Location = new(attachedForm.Right, attachedForm.Top);
-        BringToFrontWithoutActivation();
+        if (owner is not null)
+        {
+            Owner = owner;
+            StartPosition = FormStartPosition.Manual;
+            if (owner.Visible)
+            {
+                Location = new(owner.Right, owner.Top);
+                Show();
+                Activate();
+            }
+            else
+            {
+                EventHandler onShown = null;
+                onShown = (_, _) =>
+                {
+                    Location = new(owner.Right, owner.Top);
+                    owner.Shown -= onShown;
+                    Show();
+                    Activate();
+                };
+                owner.Shown += onShown;
+            }
+        }
+        else
+        {
+            Show();
+            Activate();
+        }
     }
 
     internal void Log(string text) => Log(text, LogTextBox.Error);

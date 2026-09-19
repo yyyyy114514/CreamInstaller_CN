@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -58,8 +58,9 @@ internal static class ParadoxLauncher
             return false;
         using DialogForm dialogForm = new(form);
         return dialogForm.Show(SystemIcons.Warning,
-            Locale.Get("ParadoxLauncherNoDlcWarning"),
-            Locale.Get("Ignore"), Locale.Get("Cancel"),
+            "WARNING: There are no scanned games with DLC that can be added to the Paradox Launcher!"
+            + "\n\nInstalling DLC unlockers for the Paradox Launcher alone can cause existing configurations to be deleted!",
+            "Ignore", "Cancel",
             "Paradox Launcher") != DialogResult.OK;
     }
 
@@ -142,9 +143,9 @@ internal static class ParadoxLauncher
                 {
                     steamOriginalSdk32.WriteResource(api32);
                     if (installForm is not null)
-                        installForm.UpdateUser(Locale.Format("CorrectedSteamworks", api32), LogTextBox.Action);
+                        installForm.UpdateUser("Corrected Steamworks: " + api32, LogTextBox.Action);
                     else
-                        dialogText.AppendLine(Locale.Format("CorrectedSteamworks", api32));
+                        dialogText.AppendLine("Corrected Steamworks: " + api32);
                     neededRepair = true;
                 }
 
@@ -152,9 +153,9 @@ internal static class ParadoxLauncher
                 {
                     steamOriginalSdk64.WriteResource(api64);
                     if (installForm is not null)
-                        installForm.UpdateUser(Locale.Format("CorrectedSteamworks", api64), LogTextBox.Action);
+                        installForm.UpdateUser("Corrected Steamworks: " + api64, LogTextBox.Action);
                     else
-                        dialogText.AppendLine(Locale.Format("CorrectedSteamworks", api64));
+                        dialogText.AppendLine("Corrected Steamworks: " + api64);
                     neededRepair = true;
                 }
 
@@ -169,9 +170,9 @@ internal static class ParadoxLauncher
                 {
                     epicOriginalSdk32.WriteResource(api32);
                     if (installForm is not null)
-                        installForm.UpdateUser(Locale.Format("CorrectedEpicOnlineServices", api32), LogTextBox.Action);
+                        installForm.UpdateUser("Corrected Epic Online Services: " + api32, LogTextBox.Action);
                     else
-                        dialogText.AppendLine(Locale.Format("CorrectedEpicOnlineServices", api32));
+                        dialogText.AppendLine("Corrected Epic Online Services: " + api32);
                     neededRepair = true;
                 }
 
@@ -179,9 +180,9 @@ internal static class ParadoxLauncher
                 {
                     epicOriginalSdk64.WriteResource(api64);
                     if (installForm is not null)
-                        installForm.UpdateUser(Locale.Format("CorrectedEpicOnlineServices", api64), LogTextBox.Action);
+                        installForm.UpdateUser("Corrected Epic Online Services: " + api64, LogTextBox.Action);
                     else
-                        dialogText.AppendLine(Locale.Format("CorrectedEpicOnlineServices", api64));
+                        dialogText.AppendLine("Corrected Epic Online Services: " + api64);
                     neededRepair = true;
                 }
 
@@ -194,10 +195,10 @@ internal static class ParadoxLauncher
                 if (neededRepair)
                 {
                     if (installForm is not null)
-                        installForm.UpdateUser(Locale.Get("ParadoxLauncherRepaired"), LogTextBox.Action);
+                        installForm.UpdateUser("Paradox Launcher successfully repaired!", LogTextBox.Action);
                     else
                     {
-                        dialogText.AppendLine("\n" + Locale.Get("ParadoxLauncherRepaired"));
+                        dialogText.AppendLine("\nParadox Launcher successfully repaired!");
                         _ = dialogForm.Show(form.Icon, dialogText.ToString(), customFormText: "Paradox Launcher");
                     }
 
@@ -205,9 +206,9 @@ internal static class ParadoxLauncher
                 }
 
                 if (installForm is not null)
-                    installForm.UpdateUser(Locale.Get("ParadoxLauncherNotNeedRepair"), LogTextBox.Success);
+                    installForm.UpdateUser("Paradox Launcher did not need to be repaired.", LogTextBox.Success);
                 else
-                    _ = dialogForm.Show(SystemIcons.Information, Locale.Get("ParadoxLauncherNotNeedRepair"),
+                    _ = dialogForm.Show(SystemIcons.Information, "Paradox Launcher does not need to be repaired.",
                         customFormText: "Paradox Launcher");
                 return RepairResult.Unnecessary;
             }
@@ -216,15 +217,19 @@ internal static class ParadoxLauncher
         if (Program.Canceled)
         {
             _ = form is InstallForm
-                ? throw new CustomMessageException(Locale.Get("RepairFailedCanceled"))
-                : dialogForm.Show(SystemIcons.Error, Locale.Get("ParadoxLauncherRepairFailedCanceled"),
+                ? throw new CustomMessageException("Repair failed! The operation was canceled.")
+                : dialogForm.Show(SystemIcons.Error, "Paradox Launcher repair failed! The operation was canceled.",
                     customFormText: "Paradox Launcher");
             return RepairResult.Failure;
         }
 
         _ = form is InstallForm
-            ? throw new CustomMessageException(Locale.Get("ParadoxLauncherRepairFailed"))
-            : dialogForm.Show(SystemIcons.Error, Locale.Get("ParadoxLauncherRepairFailedDialog"),
+            ? throw new CustomMessageException(
+                "Repair failed! " + "An original Steamworks and/or Epic Online Services file could not be found. "
+                                  + "You will likely have to reinstall Paradox Launcher to fix this issue.")
+            : dialogForm.Show(SystemIcons.Error,
+                "Paradox Launcher repair failed!" + "\n\nAn original Steamworks and/or Epic Online Services file could not be found."
+                                                  + "\nYou will likely have to reinstall Paradox Launcher to fix this issue.",
                 customFormText: "Paradox Launcher");
         return RepairResult.Failure;
     }

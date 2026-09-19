@@ -1,6 +1,6 @@
 # CreamInstaller汉化版
 
-汉化版本：5.0.2.3[点击前往](https://github.com/FroggMaster/CreamInstaller/releases/latest)
+汉化版本：5.0.2.3[点击前往](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest)
 
 删除了更新模块
 
@@ -10,13 +10,15 @@
 
 bili:[奶农强健贝利亚](https://space.bilibili.com/501471084)
 
+本汉化版基于原版 [CreamInstaller](https://github.com/FroggMaster/CreamInstaller)（原作者 [FroggMaster](https://github.com/FroggMaster)），感谢原作者的开发与维护。
+
 下面是原版readme
 
 ### [Revived] CreamInstaller: Automatic DLC Unlocker Installer & Configuration Generator
 
-[![Latest Release](https://img.shields.io/github/v/release/FroggMaster/CreamInstaller?label=latest%20release)](https://github.com/FroggMaster/CreamInstaller/releases/latest) [![CI Build](https://github.com/FroggMaster/CreamInstaller/actions/workflows/ci-builds.yml/badge.svg)](https://github.com/FroggMaster/CreamInstaller/actions/workflows/ci-builds.yml)
+[![Latest Release](https://img.shields.io/github/v/release/yyyyy114514/CreamInstaller_CN?label=latest%20release)](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest) [![CI Build](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml/badge.svg)](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml)
 
-![Program Preview Image](https://raw.githubusercontent.com/FroggMaster/CreamInstaller/main/preview.png)
+![Program Preview Image](https://raw.githubusercontent.com/yyyyy114514/CreamInstaller_CN/main/preview.png)
 
 ###### **NOTE:** This is simply a preview image; this is not a list of supported games nor configurations!
 
@@ -49,13 +51,13 @@ games and DLCs the user selects; however, through the use of **right-click conte
 <details>
 <summary>Expand for more info on CI Builds</summary>
 
-- CreamInstaller is automatically built and tested using GitHub Actions on every push to the **main** branch. You can view all recent CI build runs by clicking the status badge at the top or here: [![CI Build](https://github.com/FroggMaster/CreamInstaller/actions/workflows/ci-builds.yml/badge.svg)](https://github.com/FroggMaster/CreamInstaller/actions/workflows/ci-builds.yml)
+- CreamInstaller is automatically built and tested using GitHub Actions on every push to the **main** branch. You can view all recent CI build runs by clicking the status badge at the top or here: [![CI Build](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml/badge.svg)](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml)
 
 </details>
 
 ---
 #### Installation:
-1. Click [here](https://github.com/FroggMaster/CreamInstaller/releases/latest/download/CreamInstaller.exe) to download the latest release from [GitHub](https://github.com/FroggMaster/CreamInstaller).
+1. Click [here](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest/download/CreamInstaller.exe) to download the latest release from [GitHub](https://github.com/yyyyy114514/CreamInstaller_CN).
 2. Move the executable to anywhere on your computer you want. *It's completely self-contained.*
 
 If the program doesn't seem to launch, try downloading and installing [.NET Desktop Runtime 8.0.7](https://download.visualstudio.microsoft.com/download/pr/bb581716-4cca-466e-9857-512e2371734b/5fe261422a7305171866fd7812d0976f/windowsdesktop-runtime-8.0.7-win-x64.exe) and restarting your computer. Note that the program currently only supports Windows 10+ 64-bit machines as seen [here](https://github.com/dotnet/core/blob/main/release-notes/8.0/supported-os.md).
@@ -87,7 +89,7 @@ Check the following in order:
 1. **System requirements**: Windows 10+ 64-bit only ([.NET 8 Supported OS List](https://github.com/dotnet/core/blob/main/release-notes/8.0/supported-os.md))
 2. **Extract before running**: Ensure you've extracted the executable from the ZIP file
 3. **Antivirus**: Add an exception for CreamInstaller (see [False Positives](#false-positive-antivirus-detections) below)
-4. **Runtime**: Install [.NET 8 Desktop Runtime](https://github.com/FroggMaster/CreamInstaller#installation) and restart your computer
+4. **Runtime**: Install [.NET 8 Desktop Runtime](https://github.com/yyyyy114514/CreamInstaller_CN#installation) and restart your computer
 
 If none of these work, your system may not support .NET 8 or may have underlying system issues.
 
@@ -108,7 +110,7 @@ If the program successfully installs the unlockers but DLCs still aren't unlocki
 
 If you're having trouble, try the following:
 
-- Review the [Usage section](https://github.com/FroggMaster/CreamInstaller#usage) for proper setup  
+- Review the [Usage section](https://github.com/yyyyy114514/CreamInstaller_CN#usage) for proper setup  
 - Visit the [CS.RIN.RU forum](https://cs.rin.ru/forum/viewforum.php?f=10) for game-specific troubleshooting and compatibility info
 
 </details>
@@ -283,9 +285,9 @@ If your antivirus quarantines the unlocker DLL or interferes with the installati
 
 ---
 ##### Bugs/Crashes/Issues:
-For reliable and quick assistance, all bugs, crashes and other issues should be referred to the [GitHub Issues](https://github.com/FroggMaster/CreamInstaller/issues) page!
+For reliable and quick assistance, all bugs, crashes and other issues should be referred to the [GitHub Issues](https://github.com/yyyyy114514/CreamInstaller_CN/issues) page!
 
-##### **HOWEVER**: Please read the [FAQ entry](https://github.com/FroggMaster/CreamInstaller#faq--common-issues) above and/or [template issue](https://github.com/FroggMaster/CreamInstaller/issues/new/choose) corresponding to your problem should one exist! Also, note that the [GitHub Issues](https://github.com/FroggMaster/CreamInstaller/issues) page is not your personal assistance hotline, rather it is for genuine bugs/crashes/issues with the program itself. If you post an issue which is off-topic or has already been explained within the FAQ, template issues, and/or within this text in general, I will just close it and you will be ignored.
+##### **HOWEVER**: Please read the [FAQ entry](https://github.com/yyyyy114514/CreamInstaller_CN#faq--common-issues) above and/or [template issue](https://github.com/yyyyy114514/CreamInstaller_CN/issues/new/choose) corresponding to your problem should one exist! Also, note that the [GitHub Issues](https://github.com/yyyyy114514/CreamInstaller_CN/issues) page is not your personal assistance hotline, rather it is for genuine bugs/crashes/issues with the program itself. If you post an issue which is off-topic or has already been explained within the FAQ, template issues, and/or within this text in general, I will just close it and you will be ignored.
 
 ---
 

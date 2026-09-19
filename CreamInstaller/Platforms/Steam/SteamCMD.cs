@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,77 +60,90 @@ internal static partial class SteamCMD
                         AttemptCount[appId] = ++count;
                     }
 
-                    if (Program.Canceled)
-                        return "";
-                    ProcessStartInfo processStartInfo = new()
-                    {
-                        FileName = FilePath, RedirectStandardOutput = true, RedirectStandardInput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false, Arguments = appId is null ? "+quit" : GetArguments(appId),
-                        CreateNoWindow = true,
-                        StandardInputEncoding = Encoding.UTF8, StandardOutputEncoding = Encoding.UTF8,
-                        StandardErrorEncoding = Encoding.UTF8
-                    };
-                    Process process = Process.Start(processStartInfo);
-                    // Drain stderr asynchronously to prevent pipe deadlock
-                    process.BeginErrorReadLine();
-                    StringBuilder output = new();
-                    StringBuilder appInfo = new();
-                    bool appInfoStarted = false;
-                    DateTime lastOutput = DateTime.UtcNow;
-                    const int bufferSize = 4096;
-                    char[] buffer = new char[bufferSize];
-                    while (process != null)
+                    try
                     {
                         if (Program.Canceled)
+                            return "";
+                        ProcessStartInfo processStartInfo = new()
                         {
-                            process.Kill(true);
-                            process.Close();
-                            break;
-                        }
-
-                        // Buffered read: ReadAsync returns up to bufferSize chars per call,
-                        // with Task.WhenAny providing a 5s idle timeout
-                        Task<int> readTask = process.StandardOutput.ReadAsync(buffer, 0, bufferSize);
-                        if (await Task.WhenAny(readTask, Task.Delay(5000)) == readTask)
+                            FileName = FilePath, RedirectStandardOutput = true, RedirectStandardInput = true,
+                            RedirectStandardError = true,
+                            UseShellExecute = false, Arguments = appId is null ? "+quit" : GetArguments(appId),
+                            CreateNoWindow = true,
+                            StandardInputEncoding = Encoding.UTF8, StandardOutputEncoding = Encoding.UTF8,
+                            StandardErrorEncoding = Encoding.UTF8
+                        };
+                        Process process = Process.Start(processStartInfo);
+                        // Drain stderr asynchronously to prevent pipe deadlock
+                        process.BeginErrorReadLine();
+                        StringBuilder output = new();
+                        StringBuilder appInfo = new();
+                        bool appInfoStarted = false;
+                        DateTime lastOutput = DateTime.UtcNow;
+                        const int bufferSize = 4096;
+                        char[] buffer = new char[bufferSize];
+                        while (process != null)
                         {
-                            int charsRead = await readTask;
-                            if (charsRead > 0)
+                            if (Program.Canceled)
                             {
-                                lastOutput = DateTime.UtcNow;
-                                for (int j = 0; j < charsRead; j++)
-                                {
-                                    char ch = buffer[j];
-                                    if (ch == '{')
-                                        appInfoStarted = true;
-                                    _ = appInfoStarted ? appInfo.Append(ch) : output.Append(ch);
-                                }
-                                continue;
+                                process.Kill(true);
+                                process.Close();
+                                break;
                             }
-                            // charsRead == 0: stream closed, process exited naturally
-                        }
-                        // else: timeout — 5 seconds without any output
 
-                        if (!process.HasExited)
-                            process.Kill(true);
-                        process.Close();
-                        if (appId != null &&
-                            output.ToString().Contains($"No app info for AppID {appId} found, requesting..."))
-                        {
-                            AttemptCount[appId]++;
-                            processStartInfo.Arguments = GetArguments(appId);
-                            process = Process.Start(processStartInfo);
-                            process.BeginErrorReadLine();
-                            appInfoStarted = false;
-                            _ = output.Clear();
-                            _ = appInfo.Clear();
+                            // Buffered read: ReadAsync returns up to bufferSize chars per call,
+                            // with Task.WhenAny providing a 5s idle timeout
+                            Task<int> readTask = process.StandardOutput.ReadAsync(buffer, 0, bufferSize);
+                            if (await Task.WhenAny(readTask, Task.Delay(5000)) == readTask)
+                            {
+                                int charsRead = await readTask;
+                                if (charsRead > 0)
+                                {
+                                    lastOutput = DateTime.UtcNow;
+                                    for (int j = 0; j < charsRead; j++)
+                                    {
+                                        char ch = buffer[j];
+                                        if (ch == '{')
+                                            appInfoStarted = true;
+                                        _ = appInfoStarted ? appInfo.Append(ch) : output.Append(ch);
+                                    }
+                                    continue;
+                                }
+                                // charsRead == 0: stream closed, process exited naturally
+                            }
+                            // else: timeout — 5 seconds without any output
+
+                            if (!process.HasExited)
+                                process.Kill(true);
+                            process.Close();
+                            if (appId != null &&
+                                output.ToString().Contains($"No app info for AppID {appId} found, requesting..."))
+                            {
+                                AttemptCount[appId]++;
+                                processStartInfo.Arguments = GetArguments(appId);
+                                process = Process.Start(processStartInfo);
+                                process.BeginErrorReadLine();
+                                appInfoStarted = false;
+                                _ = output.Clear();
+                                _ = appInfo.Clear();
+                            }
+                            else
+                                break;
                         }
-                        else
-                            break;
+
+                        return appInfo.ToString();
                     }
-
-                    _ = Interlocked.Decrement(ref Locks[i]);
-                    return appInfo.ToString();
+                    catch (Exception e)
+                    {
+                        ProgramData.Log.Info(
+                            "[SteamCMD] SteamCMD process failed for " + (appId is null ? "setup" : appId) +
+                            ": " + e.Message, LogDestination.Steam);
+                        throw;
+                    }
+                    finally
+                    {
+                        _ = Interlocked.Decrement(ref Locks[i]);
+                    }
                 }
 
                 await Task.Delay(200);
@@ -254,7 +267,7 @@ internal static partial class SteamCMD
             attempts++;
             if (attempts > 10)
             {
-                ProgramData.LogSteam("[SteamCMD] Failed to query SteamCMD after 10 tries: " + appId + " (" + branch + ")");
+                ProgramData.Log.Info("[SteamCMD] Failed to query SteamCMD after 10 tries: " + appId + " (" + branch + ")", LogDestination.Steam);
                 break;
             }
 
@@ -273,9 +286,9 @@ internal static partial class SteamCMD
                 }
                 else
                 {
-                    ProgramData.LogSteam(
+                    ProgramData.Log.Info(
                         "[SteamCMD] SteamCMD query failed on attempt #" + attempts + " for " + appId + " (" + branch +
-                        "): Bad output");
+                        "): Bad output", LogDestination.Steam);
                     continue;
                 }
             }
@@ -283,9 +296,9 @@ internal static partial class SteamCMD
             if (!ValveDataFile.TryDeserialize(output, out VProperty appInfo) || appInfo.Value is VValue)
             {
                 appUpdateFile.DeleteFile();
-                ProgramData.LogSteam(
+                ProgramData.Log.Info(
                     "[SteamCMD] SteamCMD query failed on attempt #" + attempts + " for " + appId + " (" + branch +
-                    "): Deserialization failed");
+                    "): Deserialization failed", LogDestination.Steam);
                 continue;
             }
 
@@ -295,9 +308,9 @@ internal static partial class SteamCMD
                 if (appInfo.ToJson().Value.ToObject<CmdAppData>() is not { } cmdAppData)
                 {
                     appUpdateFile.DeleteFile();
-                    ProgramData.LogSteam(
+                    ProgramData.Log.Info(
                         "[SteamCMD] SteamCMD query failed on attempt #" + attempts + " for " + appId + " (" + branch +
-                        "): VDF-JSON conversion failed");
+                        "): VDF-JSON conversion failed", LogDestination.Steam);
                     continue;
                 }
 
@@ -306,9 +319,9 @@ internal static partial class SteamCMD
             catch (Exception e)
             {
                 appUpdateFile.DeleteFile();
-                ProgramData.LogSteam(
+                ProgramData.Log.Info(
                     "[SteamCMD] SteamCMD query failed on attempt #" + attempts + " for " + appId + " (" + branch +
-                    "): VDF-JSON conversion failed (" + e.Message + ")");
+                    "): VDF-JSON conversion failed (" + e.Message + ")", LogDestination.Steam);
                 continue;
             }
 
@@ -326,9 +339,9 @@ internal static partial class SteamCMD
             foreach (string dlcAppUpdateFile in dlcAppIds.Select(id => $@"{AppInfoPath}\{id}.vdf"))
                 dlcAppUpdateFile.DeleteFile();
             appUpdateFile.DeleteFile();
-            ProgramData.LogSteam(
+            ProgramData.Log.Info(
                 "[SteamCMD] SteamCMD query skipped on attempt #" + attempts + " for " + appId + " (" + branch +
-                "): Outdated cache");
+                "): Outdated cache", LogDestination.Steam);
         }
 
         return null;

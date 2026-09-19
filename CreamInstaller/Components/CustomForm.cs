@@ -32,16 +32,6 @@ internal class CustomForm : Form
         TopLevel = true;
     }
 
-    protected override CreateParams CreateParams // Double buffering for all controls
-    {
-        get
-        {
-            CreateParams handleParam = base.CreateParams;
-            handleParam.ExStyle |= 0x02; // WS_EX_COMPOSITED       
-            return handleParam;
-        }
-    }
-
     protected override void OnHandleCreated(EventArgs e)
     {
         base.OnHandleCreated(e);
@@ -59,8 +49,7 @@ internal class CustomForm : Form
         using DialogForm helpDialog = new(this);
         helpDialog.HelpButton = false;
         string repository = $"https://github.com/{Program.RepositoryOwner}/{Program.RepositoryName}";
-        _ = helpDialog.Show(SystemIcons.Information,
-            Locale.Format("HelpText", repository));
+        _ = helpDialog.Show(SystemIcons.Information, Locale.Format("HelpText", repository));
     }
 
     private void OnActivation(object sender, EventArgs args) => Activate();

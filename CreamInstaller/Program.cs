@@ -2,7 +2,6 @@
 
 using System;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,37 +17,109 @@ internal static class Program
     internal static readonly string Name = Application.CompanyName!;
     private static readonly string Description = Application.ProductName!;
 
+    // Full product version, e.g. "5.0.2.3" for a release build or "5.0.2.3-CI412-bcd29f4" for a
+    // CI build. Anything after a "+" is the SDK's SourceRevisionId and not part of the version.
     internal static readonly string Version = Application.ProductVersion[
         ..(Application.ProductVersion.IndexOf('+') is var index && index != -1
             ? index
             : Application.ProductVersion.Length)];
 
-    internal const string RepositoryOwner = "FroggMaster";
-    internal static readonly string RepositoryName = Name;
-    internal static readonly string RepositoryPackage = Name + ".zip";
-    internal static readonly string RepositoryExecutable = Name + ".exe";
+    // Numeric part of the version, used for update comparisons. System.Version cannot parse the
+    // "-CI<runNumber>-<shortSha>" suffix that CI builds append, so everything up to the first "-"
+    // is used instead (e.g. "5.0.2.3-CI412-bcd29f4" yields "5.0.2.3").
+    internal static readonly string VersionBase = Version[
+        ..(Version.IndexOf('-') is var index && index != -1 ? index : Version.Length)];
+
+    // Commit hash of this build. CI builds encode it in the version as
+    // "<Version>-CI<runNumber>-<shortSha>"; other builds rely on the SourceRevisionId that the
+    // .NET SDK appends to the informational version
+    // (e.g. "5.0.2.3+5c9f5143939727f406359840c74e0f182f547e31").
+    // Null when neither is present, which happens when the project was built outside a git repo.
+    internal static readonly string? CommitHash = ParseCommitHash(Application.ProductVersion);
+
+    // Abbreviated (7-character) commit hash, matching the short SHA used in pre-release asset names.
+    internal static readonly string? ShortCommitHash =
+        CommitHash is { Length: >= 7 } ? CommitHash[..7] : CommitHash;
+
+    internal const string RepositoryOwner = "yyyyy114514";
+    internal static readonly string RepositoryName = "CreamInstaller_CN";
+    internal static readonly string RepositoryPackage = "CreamInstaller.zip";
+    internal static readonly string RepositoryExecutable = "CreamInstaller.exe";
+    internal static readonly string RepositoryPrereleasePrefix = "CreamInstaller-CI";
 #if DEBUG
-    internal static readonly string ApplicationName = Name + " v5.0.2.3-debug: " + Description;
-    internal static readonly string ApplicationNameShort = Name + " v5.0.2.3-debug";
+    internal static readonly string ApplicationName = Name + " v" + Version + "-debug: " + Description;
+    internal static readonly string ApplicationNameShort = Name + " v" + Version + "-debug";
 #else
-    internal static readonly string ApplicationName = Name + " v5.0.2.3";
-    internal static readonly string ApplicationNameShort = Name + " v5.0.2.3";
+    internal static readonly string ApplicationName = Name + " v" + Version + ": " + Description;
+    internal static readonly string ApplicationNameShort = Name + " v" + Version;
 #endif
+
+    // Extracts the commit hash from a product version. CI builds encode it as the last segment of
+    // a "-CI<runNumber>-<shortSha>" suffix; any other build falls back to the "+<sourceRevisionId>"
+    // that the SDK appends.
+    private static string? ParseCommitHash(string productVersion)
+    {
+        int ciIndex = productVersion.IndexOf("-CI", StringComparison.Ordinal);
+        if (ciIndex != -1)
+        {
+            int separator = productVersion.LastIndexOf('-');
+            if (separator > ciIndex && separator + 1 < productVersion.Length)
+                return productVersion[(separator + 1)..];
+        }
+
+        int hashIndex = productVersion.IndexOf('+');
+        if (hashIndex != -1 && hashIndex + 1 < productVersion.Length)
+            return productVersion[(hashIndex + 1)..];
+
+        return null;
+    }
 
     private static readonly Process CurrentProcess = Process.GetCurrentProcess();
     internal static readonly string CurrentProcessFilePath = CurrentProcess.MainModule?.FileName ?? "";
     internal static readonly int CurrentProcessId = CurrentProcess.Id;
 
-    // Setting is now toggleable. Huzzah!
-    internal static bool UseSmokeAPI;
+    // Settings loaded from ProgramData on startup — persisted across sessions
+    internal static SettingsModel AppSettings { get; private set; } = new();
 
-    internal static bool BlockProtectedGames = true;
+    internal static bool UseSmokeAPI
+    {
+        get => AppSettings.UseSmokeAPI;
+        set => AppSettings.UseSmokeAPI = value;
+    }
+
+    internal static bool BlockProtectedGames
+    {
+        get => AppSettings.BlockProtectedGames;
+        set => AppSettings.BlockProtectedGames = value;
+    }
+
+    internal static bool DarkModeEnabled
+    {
+        get => AppSettings.DarkModeEnabled;
+        set => AppSettings.DarkModeEnabled = value;
+    }
+
+    internal static bool SortByName
+    {
+        get => AppSettings.SortByName;
+        set => AppSettings.SortByName = value;
+    }
+
+    internal static bool CheckPreReleases
+    {
+        get => AppSettings.CheckPreReleases;
+        set => AppSettings.CheckPreReleases = value;
+    }
+
+    internal static DefaultAppStatus DefaultAppStatus
+    {
+        get => AppSettings.DefaultAppStatus;
+        set => AppSettings.DefaultAppStatus = value;
+    }
+
     internal static readonly string[] ProtectedGames = ["PAYDAY 2"];
     internal static readonly string[] ProtectedGameDirectories = [@"\EasyAntiCheat", @"\BattlEye"];
     internal static readonly string[] ProtectedGameDirectoryExceptions = [];
-
-    // Dark mode is disabled by default
-    internal static bool DarkModeEnabled;
 
     internal static bool IsGameBlocked(string name, string? directory = null)
         => GetGameBlockedReason(name, directory) is not null;
@@ -68,34 +139,34 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
-        Locale.Load("zh-CN");
-        CultureInfo uiCulture = new("zh-CN");
-        Thread.CurrentThread.CurrentCulture = uiCulture;
-        Thread.CurrentThread.CurrentUICulture = uiCulture;
-
         using Mutex mutex = new(true, Name, out bool createdNew);
         if (createdNew)
         {
             _ = Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
+            // Opt into Windows dark mode for common controls BEFORE any window is created,
+            // otherwise "DarkMode_Explorer" themes (combo boxes, scrollbars) render light.
+            Utility.NativeMethods.EnableProcessDarkMode();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.ApplicationExit += OnApplicationExit;
             Application.ThreadException += (_, e) => e.Exception.HandleFatalException();
             Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
             AppDomain.CurrentDomain.UnhandledException +=
                 (_, e) => (e.ExceptionObject as Exception)?.HandleFatalException();
+            Locale.Load("zh-CN");
             bool retry = true;
             while (retry)
             {
                 try
                 {
-                    HttpClientManager.Setup();
-                    SelectForm form = SelectForm.Current;
+                HttpClientManager.Setup();
+                AppSettings = ProgramData.LoadSettings(); // load persisted settings
+                using MainForm form = new();
 #if DEBUG
-                    DebugForm.Current.Attach(form);
+                DebugForm.Current.Open(form);
 #endif
-                    // Apply initial theme
-                    Utility.ThemeManager.Apply(form);
+                // Apply initial theme (dark by default)
+                Utility.ThemeManager.Apply(form);
                     Application.Run(form);
                     retry = false;
                 }
@@ -148,7 +219,7 @@ internal static class Program
             }
             catch (Exception ex)
             {
-                ProgramData.LogWarning($"Cleanup failed: {ex.Message}");
+                ProgramData.Log.Warn($"Cleanup failed: {ex.Message}");
             }
         });
     }
@@ -164,15 +235,16 @@ internal static class Program
             // Wait up to 5 seconds for graceful cleanup
             if (!cleanupTask.Wait(TimeSpan.FromSeconds(5)))
             {
-                ProgramData.LogWarning("Cleanup timed out during application exit");
+                ProgramData.Log.Warn("Cleanup timed out during application exit");
             }
         }
         catch (Exception ex)
         {
-            ProgramData.LogWarning($"Cleanup exception during exit: {ex.Message}");
+            ProgramData.Log.Warn($"Cleanup exception during exit: {ex.Message}");
         }
         finally
         {
+            ProgramData.SaveSettings(AppSettings);
             HttpClientManager.Dispose();
         }
     }

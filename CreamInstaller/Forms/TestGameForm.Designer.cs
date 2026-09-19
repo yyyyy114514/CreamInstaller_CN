@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 
+using CreamInstaller.Utility;
+
 namespace CreamInstaller.Forms;
 
 partial class TestGameForm
@@ -43,7 +45,7 @@ partial class TestGameForm
         platformGroupBox.Location = new System.Drawing.Point(12, 8);
         platformGroupBox.Size = new System.Drawing.Size(536, 44);
         platformGroupBox.TabStop = false;
-        platformGroupBox.Text = "Platform";
+        platformGroupBox.Text = Locale.Get("Platform");
         platformGroupBox.Controls.Add(steamRadioButton);
         platformGroupBox.Controls.Add(epicRadioButton);
         platformGroupBox.Controls.Add(ubisoftRadioButton);
@@ -52,32 +54,32 @@ partial class TestGameForm
         steamRadioButton.Checked = true;
         steamRadioButton.Location = new System.Drawing.Point(10, 17);
         steamRadioButton.TabStop = true;
-        steamRadioButton.Text = "Steam";
+        steamRadioButton.Text = Locale.Get("Steam");
         steamRadioButton.CheckedChanged += OnPlatformChanged;
 
         epicRadioButton.AutoSize = true;
         epicRadioButton.Location = new System.Drawing.Point(80, 17);
-        epicRadioButton.Text = "Epic";
+        epicRadioButton.Text = Locale.Get("Epic");
         epicRadioButton.CheckedChanged += OnPlatformChanged;
 
         ubisoftRadioButton.AutoSize = true;
         ubisoftRadioButton.Location = new System.Drawing.Point(140, 17);
-        ubisoftRadioButton.Text = "Ubisoft";
+        ubisoftRadioButton.Text = Locale.Get("Ubisoft");
         ubisoftRadioButton.CheckedChanged += OnPlatformChanged;
 
         // ── App ID row ── y=62
         appIdLabel.AutoSize = true;
         appIdLabel.Location = new System.Drawing.Point(12, 66);
-        appIdLabel.Text = "App ID:";
+        appIdLabel.Text = Locale.Get("AppID");
 
         appIdTextBox.Location = new System.Drawing.Point(105, 63);
         appIdTextBox.Size = new System.Drawing.Size(443, 23);
-        appIdTextBox.PlaceholderText = "e.g. 480";
+        appIdTextBox.PlaceholderText = Locale.Get("SteamAppIdPlaceholder");
 
         // ── Game Name row ── y=96
         gameNameLabel.AutoSize = true;
         gameNameLabel.Location = new System.Drawing.Point(12, 100);
-        gameNameLabel.Text = "Game Name:";
+        gameNameLabel.Text = Locale.Get("GameName");
 
         // Steam: full width; Epic: leaves room for Search button (75px + 4px gap)
         gameNameTextBox.Location = new System.Drawing.Point(105, 97);
@@ -85,14 +87,14 @@ partial class TestGameForm
 
         epicSearchButton.Location = new System.Drawing.Point(468, 97);
         epicSearchButton.Size = new System.Drawing.Size(80, 23);
-        epicSearchButton.Text = "Search";
+        epicSearchButton.Text = Locale.Get("Search");
         epicSearchButton.Visible = false;
         epicSearchButton.Click += OnEpicSearch;
 
         // ── Ubisoft search button ── shares same position as Epic button (mutually exclusive)
         ubisoftSearchButton.Location = new System.Drawing.Point(468, 97);
         ubisoftSearchButton.Size = new System.Drawing.Size(80, 23);
-        ubisoftSearchButton.Text = "Search";
+        ubisoftSearchButton.Text = Locale.Get("Search");
         ubisoftSearchButton.Visible = false;
         ubisoftSearchButton.Click += OnUbisoftSearch;
 
@@ -111,17 +113,17 @@ partial class TestGameForm
         // ── Action buttons ── y=220 (was y=270 with DLC section)
         generateButton.Location = new System.Drawing.Point(12, 270);
         generateButton.Size = new System.Drawing.Size(150, 26);
-        generateButton.Text = "Generate Test Game";
+        generateButton.Text = Locale.Get("GenerateTestGame");
         generateButton.Click += OnGenerate;
 
         clearButton.Location = new System.Drawing.Point(168, 270);
         clearButton.Size = new System.Drawing.Size(110, 26);
-        clearButton.Text = "Clear All Tests";
+        clearButton.Text = Locale.Get("ClearAllTests");
         clearButton.Click += OnClearAll;
 
         closeButton.Location = new System.Drawing.Point(284, 270);
         closeButton.Size = new System.Drawing.Size(70, 26);
-        closeButton.Text = "Close";
+        closeButton.Text = Locale.Get("Close");
         closeButton.Click += OnClose;
 
         // ── Status label ── y=302
@@ -137,7 +139,7 @@ partial class TestGameForm
         MaximizeBox = false;
         MinimizeBox = false;
         StartPosition = FormStartPosition.CenterParent;
-        Text = "Test Game Generator";
+        Text = Locale.Get("TestGameGenerator");
         Controls.Add(platformGroupBox);
         Controls.Add(appIdLabel);
         Controls.Add(appIdTextBox);

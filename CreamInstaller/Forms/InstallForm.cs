@@ -23,19 +23,9 @@ internal sealed partial class InstallForm : CustomForm
     internal InstallForm(bool uninstall = false)
     {
         InitializeComponent();
-        ApplyLocale();
         Text = Program.ApplicationName;
         logTextBox.BackColor = LogTextBox.Background;
         uninstalling = uninstall;
-    }
-
-    private void ApplyLocale()
-    {
-        acceptButton.Text = Locale.Get("OK");
-        retryButton.Text = Locale.Get("Retry");
-        cancelButton.Text = Locale.Get("Cancel");
-        reselectButton.Text = Locale.Get("ReselectProgramsGames");
-        userInfoLabel.Text = Locale.Get("Loading");
     }
 
     private void UpdateProgress(int progress)
@@ -82,8 +72,9 @@ internal sealed partial class InstallForm : CustomForm
                                     selection.ExtraSelections.Any(s => s.Platform is Platform.Steam));
 
         UpdateUser(
-            Locale.Format(uninstalling ? "UninstallingFrom" : "InstallingFor", selection.Name,
-                selection.RootDirectory), LogTextBox.Operation);
+            uninstalling
+                ? Locale.Format("UninstallingFrom", selection.Name, selection.RootDirectory)
+                : Locale.Format("InstallingFor", selection.Name, selection.RootDirectory), LogTextBox.Operation);
         IEnumerable<string> invalidDirectories = (await selection.RootDirectory.GetExecutables())
             ?.Where(d => selection.ExecutableDirectories.All(s => s.directory != Path.GetDirectoryName(d.path)))
             .Select(d => Path.GetDirectoryName(d.path));
@@ -212,8 +203,9 @@ internal sealed partial class InstallForm : CustomForm
                             : api32.FileExists() || api64.FileExists())
                     {
                         UpdateUser(
-                            Locale.Format(uninstallingForProxy ? "UninstallingSmokeAPI" : "InstallingSmokeAPI",
-                                selection.Name, directory), LogTextBox.Operation);
+                            uninstallingForProxy
+                                ? Locale.Format("UninstallingSmokeAPI", selection.Name, directory)
+                                : Locale.Format("InstallingSmokeAPI", selection.Name, directory), LogTextBox.Operation);
                         if (uninstallingForProxy)
                             await SmokeAPI.Uninstall(directory, this);
                         else
@@ -229,8 +221,9 @@ internal sealed partial class InstallForm : CustomForm
                             : api32.FileExists() || api64.FileExists())
                     {
                         UpdateUser(
-                            Locale.Format(uninstallingForProxy ? "UninstallingCreamAPI" : "InstallingCreamAPI",
-                                selection.Name, directory), LogTextBox.Operation);
+                            uninstallingForProxy
+                                ? Locale.Format("UninstallingCreamAPI", selection.Name, directory)
+                                : Locale.Format("InstallingCreamAPI", selection.Name, directory), LogTextBox.Operation);
                         if (uninstallingForProxy)
                             await CreamAPI.Uninstall(directory, this);
                         else
@@ -248,8 +241,9 @@ internal sealed partial class InstallForm : CustomForm
                         : api32.FileExists() || api64.FileExists())
                 {
                     UpdateUser(
-                        Locale.Format(uninstallingForProxy ? "UninstallingScreamAPI" : "InstallingScreamAPI",
-                            selection.Name, directory), LogTextBox.Operation);
+                        uninstallingForProxy
+                            ? Locale.Format("UninstallingScreamAPI", selection.Name, directory)
+                            : Locale.Format("InstallingScreamAPI", selection.Name, directory), LogTextBox.Operation);
                     if (uninstallingForProxy)
                         await ScreamAPI.Uninstall(directory, this);
                     else
@@ -266,8 +260,9 @@ internal sealed partial class InstallForm : CustomForm
                         : api32.FileExists() || api64.FileExists())
                 {
                     UpdateUser(
-                        Locale.Format(uninstallingForProxy ? "UninstallingUplayR1" : "InstallingUplayR1",
-                            selection.Name, directory), LogTextBox.Operation);
+                        uninstallingForProxy
+                            ? Locale.Format("UninstallingUplayR1", selection.Name, directory)
+                            : Locale.Format("InstallingUplayR1", selection.Name, directory), LogTextBox.Operation);
                     if (uninstallingForProxy)
                         await UplayR1.Uninstall(directory, this);
                     else
@@ -281,8 +276,9 @@ internal sealed partial class InstallForm : CustomForm
                         : old_api32.FileExists() || old_api64.FileExists() || api32.FileExists() || api64.FileExists())
                 {
                     UpdateUser(
-                        Locale.Format(uninstallingForProxy ? "UninstallingUplayR2" : "InstallingUplayR2",
-                            selection.Name, directory), LogTextBox.Operation);
+                        uninstallingForProxy
+                            ? Locale.Format("UninstallingUplayR2", selection.Name, directory)
+                            : Locale.Format("InstallingUplayR2", selection.Name, directory), LogTextBox.Operation);
                     if (uninstallingForProxy)
                         await UplayR2.Uninstall(directory, this);
                     else
@@ -328,68 +324,67 @@ internal sealed partial class InstallForm : CustomForm
     {
         operationsCount = activeSelections.Count;
         completeOperationsCount = 0;
-        foreach (Selection selection in activeSelections)
+        ProgramData.Log.Info($"[InstallForm] Starting {(uninstalling ? "uninstall" : "install")} for {operationsCount} program(s)", LogDestination.Unlocker);
+        foreach (Selection selection in activeSelections.ToList())
         {
             if (Program.Canceled)
                 throw new CustomMessageException(Locale.Get("OperationCanceled"));
             try
             {
+                ProgramData.Log.Info($"[InstallForm] {(uninstalling ? "Uninstalling" : "Installing")} | Game: {selection.Name} ({selection.Id}) | Platform: {selection.Platform}", LogDestination.Unlocker);
                 await OperateFor(selection);
                 if (Program.Canceled)
                     throw new CustomMessageException(Locale.Get("OperationCanceled"));
                 UpdateUser(Locale.Format("OperationSucceeded", selection.Name), LogTextBox.Success);
+                ProgramData.Log.Info($"[InstallForm] Operation succeeded | Game: {selection.Name} ({selection.Id})", LogDestination.Unlocker);
                 _ = activeSelections.Remove(selection);
             }
             catch (Exception exception)
             {
                 UpdateUser(Locale.Format("OperationFailed", selection.Name, exception), LogTextBox.Error);
+                ProgramData.Log.Info($"[InstallForm] Operation failed: {exception.Message} | Game: {selection.Name} ({selection.Id})", LogDestination.Unlocker);
             }
 
             ++completeOperationsCount;
         }
 
         // Persist install/uninstall results
+        ProgramData.Log.Info($"[InstallForm] Persisting install/uninstall results to installed.json", LogDestination.Unlocker);
         foreach (Selection selection in Selection.AllEnabled)
         {
             if (uninstalling)
             {
                 selection.InstalledUnlocker = InstalledUnlocker.None;
                 ProgramData.RemoveInstalledGame(selection.Platform, selection.Id);
+                ProgramData.Log.Info($"[InstallForm] Removed from installed.json | Game: {selection.Name} ({selection.Id})", LogDestination.Unlocker);
             }
             else
             {
                 InstalledUnlocker unlocker = selection.DetectInstalledUnlocker();
                 selection.InstalledUnlocker = unlocker;
                 if (unlocker != InstalledUnlocker.None)
-                    ProgramData.UpsertInstalledGame(new InstalledGameRecord
-                    {
-                        Platform = selection.Platform,
-                        Id = selection.Id,
-                        Name = selection.Name,
-                        RootDirectory = selection.RootDirectory,
-                        Unlocker = unlocker,
-                        UseProxy = selection.UseProxy,
-                        ProxyDllName = selection.UseProxy ? selection.Proxy ?? Selection.DefaultProxy : null,
-                        UseExtraProtection = selection.UseExtraProtection,
-                        Dlc = selection.DLC.Select(dlc => new InstalledDlcRecord
-                        {
-                            DlcType = dlc.Type.ToString(),
-                            Id = dlc.Id,
-                            Name = dlc.Name
-                        }).ToList()
-                    });
+                {
+                    int dlcCount = selection.DLC.Count();
+                    ProgramData.UpsertInstalledGame(selection.ToInstalledGameRecord());
+                    ProgramData.Log.Info($"[InstallForm] Saved to installed.json: {unlocker} with {dlcCount} DLCs | Game: {selection.Name} ({selection.Id})", LogDestination.Unlocker);
+                }
+                else
+                    ProgramData.Log.Info($"[InstallForm] No unlocker detected after install | Game: {selection.Name} ({selection.Id})", LogDestination.Unlocker);
             }
         }
-
-        SelectForm.Current?.Invoke(() => SelectForm.Current?.InvalidateGameList());
+        MainForm.Current?.Invoke(() => MainForm.Current?.InvalidateGameList());
 
         Program.Cleanup();
         int activeCount = activeSelections.Count;
         if (activeCount > 0)
+        {
+            ProgramData.Log.Info($"[InstallForm] Operation completed with {activeCount} failure(s)", LogDestination.Unlocker);
             if (activeCount == 1)
                 throw new CustomMessageException(Locale.Format("FailedOperation", activeSelections.First().Name));
             else
                 throw new CustomMessageException(Locale.Format("FailedOperations", activeCount));
+        }
+        ProgramData.Log.Info($"[InstallForm] All operations completed successfully", LogDestination.Unlocker);
     }
 
     private async void Start()
@@ -403,12 +398,16 @@ internal sealed partial class InstallForm : CustomForm
         try
         {
             await Operate();
-            UpdateUser(Locale.Format(uninstalling ? "UninstallSuccess" : "InstallSuccess", selectionCount),
+            UpdateUser(
+                Locale.Format(uninstalling ? "UninstallSuccess" : "InstallSuccess", selectionCount),
                 LogTextBox.Success);
+            ProgramData.Log.Info($"[InstallForm] Successfully {(uninstalling ? "uninstalled" : "installed and generated")} for {selectionCount} program(s)", LogDestination.Unlocker);
         }
         catch (Exception exception)
         {
-            UpdateUser(Locale.Format(uninstalling ? "UninstallFailed" : "InstallFailed", exception), LogTextBox.Error);
+            UpdateUser(
+                Locale.Format(uninstalling ? "UninstallFailed" : "InstallFailed", exception), LogTextBox.Error);
+            ProgramData.Log.Info($"[InstallForm] Operation failed: {exception.Message}", LogDestination.Unlocker);
             retryButton.Enabled = true;
         }
 

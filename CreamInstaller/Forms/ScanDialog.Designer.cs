@@ -1,11 +1,12 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 using CreamInstaller.Components;
+using CreamInstaller.Utility;
 
 namespace CreamInstaller.Forms
 {
-    partial class SelectDialogForm
+    partial class ScanDialog
     {
         private IContainer components = null;
         protected override void Dispose(bool disposing)
@@ -31,7 +32,6 @@ namespace CreamInstaller.Forms
             cancelButton = new Button();
             loadButton = new Button();
             saveButton = new Button();
-            uninstallAllButton = new Button();
             selectionTreeView = new CustomTreeView();
             filterTextBox = new System.Windows.Forms.TextBox();
             groupBox.SuspendLayout();
@@ -49,7 +49,7 @@ namespace CreamInstaller.Forms
             acceptButton.Padding = new Padding(12, 0, 12, 0);
             acceptButton.Size = new System.Drawing.Size(57, 25);
             acceptButton.TabIndex = 6;
-            acceptButton.Text = "OK";
+            acceptButton.Text = Locale.Get("OK");
             acceptButton.UseVisualStyleBackColor = true;
             // 
             // filterTextBox
@@ -57,7 +57,7 @@ namespace CreamInstaller.Forms
             filterTextBox.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             filterTextBox.Location = new System.Drawing.Point(12, 14);
             filterTextBox.Name = "filterTextBox";
-            filterTextBox.PlaceholderText = "Enter the name of a game to search";
+            filterTextBox.PlaceholderText = Locale.Get("EnterNameOrAppIdToSearch");
             filterTextBox.Size = new System.Drawing.Size(524, 23);
             filterTextBox.TabIndex = 0;
             filterTextBox.TextChanged += OnFilterTextChanged;
@@ -73,7 +73,7 @@ namespace CreamInstaller.Forms
             groupBox.Size = new System.Drawing.Size(524, 194);
             groupBox.TabIndex = 3;
             groupBox.TabStop = false;
-            groupBox.Text = "Choices";
+            groupBox.Text = Locale.Get("Choices");
             // 
             // selectionTreeView
             // 
@@ -110,7 +110,7 @@ namespace CreamInstaller.Forms
             allCheckBox.Name = "allCheckBox";
             allCheckBox.Size = new System.Drawing.Size(40, 19);
             allCheckBox.TabIndex = 1;
-            allCheckBox.Text = "All";
+            allCheckBox.Text = Locale.Get("All");
             allCheckBox.CheckedChanged += OnAllCheckBoxChanged;
             // 
             // sortCheckBox
@@ -123,7 +123,7 @@ namespace CreamInstaller.Forms
             sortCheckBox.Name = "sortCheckBox";
             sortCheckBox.Size = new System.Drawing.Size(98, 19);
             sortCheckBox.TabIndex = 3;
-            sortCheckBox.Text = "Sort By Name";
+            sortCheckBox.Text = Locale.Get("SortByName");
             sortCheckBox.CheckedChanged += OnSortCheckBoxChanged;
             // 
             // cancelButton
@@ -137,7 +137,7 @@ namespace CreamInstaller.Forms
             cancelButton.Padding = new Padding(12, 0, 12, 0);
             cancelButton.Size = new System.Drawing.Size(77, 25);
             cancelButton.TabIndex = 2;
-            cancelButton.Text = "Cancel";
+            cancelButton.Text = Locale.Get("Cancel");
             cancelButton.UseVisualStyleBackColor = true;
             // 
             // loadButton
@@ -151,7 +151,7 @@ namespace CreamInstaller.Forms
             loadButton.Padding = new Padding(12, 0, 12, 0);
             loadButton.Size = new System.Drawing.Size(67, 25);
             loadButton.TabIndex = 5;
-            loadButton.Text = "Load";
+            loadButton.Text = Locale.Get("Load");
             loadButton.UseVisualStyleBackColor = true;
             loadButton.Click += OnLoad;
             // 
@@ -166,25 +166,11 @@ namespace CreamInstaller.Forms
             saveButton.Padding = new Padding(12, 0, 12, 0);
             saveButton.Size = new System.Drawing.Size(65, 25);
             saveButton.TabIndex = 4;
-            saveButton.Text = "Save";
+            saveButton.Text = Locale.Get("Save");
             saveButton.UseVisualStyleBackColor = true;
             saveButton.Click += OnSave;
             // 
-            // uninstallAllButton
-            // 
-            uninstallAllButton.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-            uninstallAllButton.AutoSize = true;
-            uninstallAllButton.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            uninstallAllButton.DialogResult = DialogResult.Abort;
-            uninstallAllButton.Location = new System.Drawing.Point(95, 243);
-            uninstallAllButton.Name = "uninstallAllButton";
-            uninstallAllButton.Padding = new Padding(12, 0, 12, 0);
-            uninstallAllButton.Size = new System.Drawing.Size(104, 25);
-            uninstallAllButton.TabIndex = 7;
-            uninstallAllButton.Text = "Uninstall All";
-            uninstallAllButton.UseVisualStyleBackColor = true;
-            // 
-            // SelectDialogForm
+            // ScanDialog
             // 
             AcceptButton = acceptButton;
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
@@ -192,7 +178,6 @@ namespace CreamInstaller.Forms
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             ClientSize = new System.Drawing.Size(548, 279);
-            Controls.Add(uninstallAllButton);
             Controls.Add(sortCheckBox);
             Controls.Add(saveButton);
             Controls.Add(loadButton);
@@ -203,10 +188,10 @@ namespace CreamInstaller.Forms
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             MinimizeBox = false;
-            Name = "SelectDialogForm";
+            Name = "ScanDialog";
             ShowInTaskbar = false;
             StartPosition = FormStartPosition.Manual;
-            Text = "SelectDialogForm";
+            Text = "ScanDialog";
             groupBox.ResumeLayout(false);
             groupBox.PerformLayout();
             allCheckBoxFlowPanel.ResumeLayout(false);
@@ -226,7 +211,6 @@ namespace CreamInstaller.Forms
         private Button loadButton;
         private Button saveButton;
         private CheckBox sortCheckBox;
-        private Button uninstallAllButton;
         private System.Windows.Forms.TextBox filterTextBox;
     }
 }
