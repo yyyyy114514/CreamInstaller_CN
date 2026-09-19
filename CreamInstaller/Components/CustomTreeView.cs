@@ -445,7 +445,7 @@ internal sealed class CustomTreeView : TreeView
     }
 
     private static Color GetBadgeTextColor(Color backColor) =>
-        backColor.GetBrightness() > 0.5f ? Color.Black : Color.White;
+        Program.DarkModeEnabled || backColor.GetBrightness() <= 0.5f ? Color.White : Color.Black;
 
     protected override void OnMouseDown(MouseEventArgs e)
     {

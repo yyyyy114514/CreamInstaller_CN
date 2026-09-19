@@ -234,6 +234,12 @@ internal static class ThemeManager
                 cb.ForeColor = DarkFore;
                 break;
 
+            // RadioButton: match checkbox theming
+            case RadioButton rb:
+                rb.BackColor = DarkBack;
+                rb.ForeColor = DarkFore;
+                break;
+
             // LinkLabel: color and active/visited styling
             case LinkLabel ll:
                 ll.BackColor = DarkBack;
@@ -322,6 +328,10 @@ internal static class ThemeManager
             case CheckBox cb:
                 cb.BackColor = LightBack;
                 cb.ForeColor = LightFore;
+                break;
+            case RadioButton rb:
+                rb.BackColor = LightBack;
+                rb.ForeColor = LightFore;
                 break;
             case LinkLabel ll:
                 ll.BackColor = LightBack;

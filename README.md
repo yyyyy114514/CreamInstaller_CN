@@ -1,10 +1,10 @@
 # CreamInstaller汉化版
 
-汉化版本：5.0.2.3[点击前往](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest)
+汉化版本：5.1.0.0[点击前往](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest)
 
-删除了更新模块
+程序启动时不自动检查更新，可进入"设置"手动点击"检查更新"获取汉化仓库的新版本。
 
-用的kimi2.7
+汉化说明：基于原版 v5.1.0.0，程序界面与文案已全部汉化为简体中文。
 
 中文使用教程：https://lcnz0ramrz5w.feishu.cn/wiki/QJYVwZZKOijBWMkIKQwcvt3hnWe
 
