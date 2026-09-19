@@ -1,0 +1,61 @@
+name: 发布 Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tagname:
+        description: "Tag 名称（原样使用，例如 v5.1.0.1 或 5.1.0.1）"
+        required: true
+        type: string
+      releasename:
+        description: "Release 标题（留空则自动使用 tag 名）"
+        required: false
+        type: string
+      releasenotes:
+        description: "Release 说明（Markdown，发布页会渲染；留空则自动生成变更说明）"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 编译并发布
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: dotnet restore CreamInstaller.sln
+
+      - name: Build Release
+        run: dotnet build CreamInstaller.sln --configuration Release --no-restore
+
+      - name: Publish single-file exe
+        run: dotnet publish CreamInstaller.sln -c Release -r win-x64 -p:PublishSingleFile=true --self-contained true --output ./publish
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $event = Get-Content "$env:GITHUB_EVENT_PATH" -Raw | ConvertFrom-Json
+          $tag  = [string]$event.inputs.tagname
+          $name = [string]$event.inputs.releasename
+          if (-not $name) { $name = $tag }
+
+          $notes = [string]$event.inputs.releasenotes
+          if ($notes) {
+            $notes | Set-Content -Path "$env:RUNNER_TEMP\notes.md" -Encoding utf8
+            gh release create $tag --title $name --notes-file "$env:RUNNER_TEMP\notes.md" "./publish/CreamInstaller.exe"
+          } else {
+            gh release create $tag --title $name --generate-notes "./publish/CreamInstaller.exe"
+          }
