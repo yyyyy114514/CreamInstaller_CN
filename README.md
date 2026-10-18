@@ -1,10 +1,10 @@
 # CreamInstaller汉化版
 
-汉化版本：5.1.0.0[点击前往](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest)
+汉化版本：5.2.0.0[点击前往](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest)
 
 程序启动时不自动检查更新，可进入"设置"手动点击"检查更新"获取汉化仓库的新版本。
 
-汉化说明：基于原版 v5.1.0.0，程序界面与文案已全部汉化为简体中文。
+汉化说明：基于原版 v5.2.0.0，程序界面与文案已全部汉化为简体中文。
 
 中文使用教程：https://lcnz0ramrz5w.feishu.cn/wiki/QJYVwZZKOijBWMkIKQwcvt3hnWe
 
@@ -16,7 +16,7 @@ bili:[奶农强健贝利亚](https://space.bilibili.com/501471084)
 
 ### [Revived] CreamInstaller: Automatic DLC Unlocker Installer & Configuration Generator
 
-[![Latest Release](https://img.shields.io/github/v/release/yyyyy114514/CreamInstaller_CN?label=latest%20release)](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest) [![CI Build](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml/badge.svg)](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml)
+[![Latest Release](https://img.shields.io/github/v/release/yyyyy114514/CreamInstaller_CN?label=latest%20release)](https://github.com/yyyyy114514/CreamInstaller_CN/releases/latest) [![Release Workflow](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/release.yml/badge.svg)](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/release.yml)
 
 ![Program Preview Image](https://raw.githubusercontent.com/yyyyy114514/CreamInstaller_CN/main/preview.png)
 
@@ -51,7 +51,8 @@ games and DLCs the user selects; however, through the use of **right-click conte
 <details>
 <summary>Expand for more info on CI Builds</summary>
 
-- CreamInstaller is automatically built and tested using GitHub Actions on every push to the **main** branch. You can view all recent CI build runs by clicking the status badge at the top or here: [![CI Build](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml/badge.svg)](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/ci-builds.yml)
+- CreamInstaller is compiled and released using GitHub Actions. This汉化仓库使用手动触发的 **Release** 工作流：
+  [![Release Workflow](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/release.yml/badge.svg)](https://github.com/yyyyy114514/CreamInstaller_CN/actions/workflows/release.yml)
 
 </details>
 

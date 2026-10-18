@@ -37,19 +37,21 @@ public class ProgramRelease
     public string Body { get; set; }
 
     /// <summary>
-    /// Release asset to download. Stable releases use the versioned ZIP package; pre-releases
-    /// use the standalone CI executable named "CreamInstaller-CI{runNumber}-{commitHash}.exe".
+    /// Release asset to download. Releases are published as a standalone executable; pre-releases
+    /// use the CI executable named "CreamInstaller-CI{runNumber}-{commitHash}.exe".
     /// </summary>
     public Asset Asset => asset ??= Assets.FirstOrDefault(a =>
         Prerelease
             ? a.Name is not null
               && a.Name.StartsWith(Program.RepositoryPrereleasePrefix, StringComparison.OrdinalIgnoreCase)
               && a.Name.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-            : a.Name == Program.RepositoryPackage);
+            : a.Name is not null
+              && a.Name.Equals(Program.RepositoryExecutable, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
-    /// Version parsed from the release tag (e.g. "v5.0.2.3"). Null for pre-releases, which are
-    /// identified by commit hash instead of a version number.
+    /// Version parsed from the release tag (e.g. "v5.0.2.3" or "V5.2.0.0-CN-Fixed"). Any prefix
+    /// (a leading "v"/"V") and suffix (everything from the first "-", e.g. "-CN-Fixed") is ignored.
+    /// Null for pre-releases, which are identified by commit hash instead of a version number.
     /// </summary>
     public Version Version => version ??= ParseVersion(TagName);
 
@@ -84,7 +86,12 @@ public class ProgramRelease
     {
         if (tagName is null)
             return null;
-        string value = tagName.StartsWith('v') ? tagName[1..] : tagName;
+        string value = tagName;
+        if (value.Length > 0 && (value[0] is 'v' or 'V'))
+            value = value[1..];
+        int separator = value.IndexOf('-');
+        if (separator != -1)
+            value = value[..separator];
         return System.Version.TryParse(value, out System.Version parsed) ? parsed : null;
     }
 }

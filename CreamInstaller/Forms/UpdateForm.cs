@@ -235,8 +235,7 @@ internal sealed partial class UpdateForm : CustomForm
             progressLabel.Text = Locale.Get("Updating");
             cancellation = new();
             bool success = true;
-            bool prerelease = latestRelease.Prerelease;
-            string downloadPath = prerelease ? ExecutablePath : PackagePath;
+            string downloadPath = ExecutablePath;
             downloadPath.DeleteFile(true);
             await using FileStream update = downloadPath.CreateFile(true);
             bool retry = true;
@@ -289,19 +288,11 @@ internal sealed partial class UpdateForm : CustomForm
             bool canContinue = success && !Program.Canceled;
             if (canContinue)
                 updateButton.Enabled = false;
-            if (prerelease)
-            {
-                // Pre-release builds are published as a standalone executable that has already
-                // been staged directly at ExecutablePath, so no archive extraction is needed.
-                if (!canContinue)
-                    ExecutablePath.DeleteFile();
-            }
             else
             {
-                ExecutablePath.DeleteFile(canContinue);
-                if (canContinue)
-                    await Task.Run(() => PackagePath.ExtractZip(ProgramData.DirectoryPath, true, this));
-                PackagePath.DeleteFile(canContinue);
+                // The download is staged directly at ExecutablePath but failed or was canceled,
+                // so the incomplete file must be removed.
+                ExecutablePath.DeleteFile();
             }
             if (canContinue)
             {
